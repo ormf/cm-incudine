@@ -59,6 +59,11 @@
 (defmethod io-class-definer (x) x nil)
 
 (defun expand-inits (class args inits? other?)
+  "transform a property list of accessor/value pairs (args) into a
+list of slot-names/value pairs of given class. If other? is non-nil
+return accessor/pair values for non-existent accessors in a second
+list. If inits? is true it will return the slot-names/value pairs
+instead of accessor/value pairs."
   (let* ((slots (class-slots class))
          (inits (list nil))
          (tail1 inits)

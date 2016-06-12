@@ -121,7 +121,10 @@
                               string))))))
 
 (defmethod init-io ((io event-stream) &rest inits)
-           (unless (null inits)
+  "init-io sets the slots referred to by inits to the given
+values. Non-existent slots are stored in the event-stream-args slot
+of the io stream. Returns the io stream."
+  (unless (null inits)
              (multiple-value-bind
                  (init args)
                  (expand-inits (class-of io) inits nil t)

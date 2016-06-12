@@ -68,6 +68,7 @@
 
 (defmethod open-io ((obj incudine-stream) dir &rest args)
   (declare (ignore dir args))
+;;;  (format t "open-io: ~a, io-open: ~a" obj (io-open obj))
            (when (not (io-open obj)))
            obj)
 
@@ -98,6 +99,59 @@
        (close-io port ':force))
       port)
   port)
+
+(defun amp->velo (amp)
+  (round (* 127 (min 1 (max 0 amp)))))
+
+(defun jackmidi-input-stream ()
+  (unless (zerop (length jackmidi::*output-streams*))
+    (elt jackmidi::*input-streams* 0)))
+
+(defun jackmidi-output-stream ()
+  (unless (zerop (length jackmidi::*output-streams*))
+    (elt jackmidi::*output-streams* 0)))
+
+
+(defun midi-out (stream status data1 data2 data-size)
+  "create a closure to defer a call to jm_write_event
+out."
+  (lambda ()
+    (jackmidi:write-short stream (jackmidi:message status data1 data2) data-size)))
+
+(defun ctl-out (stream ccno ccval chan)
+  "wrapper for midi ctl-change messages."
+  (let ((status (+ chan (ash #b1011 4))))
+    (midi-out stream status ccno ccval 3)))
+
+;;; (defparameter evt1 (ctl-out 1 17 1))
+;;; (rtevt evt1)
+
+(defun note-on (stream pitch velo chan)
+  "wrapper for midi note-on messages."
+  (let ((status (+ chan (ash #b1001 4))))
+    (midi-out stream status pitch velo 3)))
+
+(defun note-off (stream pitch velo chan)
+  "wrapper for midi note-on messages."
+  (let ((status (+ chan (ash #b1000 4))))
+    (midi-out stream status pitch velo 3)))
+
+(defun pitch-bend (stream bendval chan)
+  "wrapper for midi pitchbend messages (range between -1 and 1!)"
+  (let* ((status (+ chan (ash #b1000 4)))
+         (bval (round (* (1+ bendval) 8191.5)))
+         (low (logand bval #x7f))
+         (high (ash (logand bval #x3f80) -7)))
+    (midi-out stream status low high 3)))
+
+(defun pgm-change (stream pgm chan)
+  "wrapper for midi program-change messages."
+  (let* ((status (+ chan (ash #b1100 4))))
+    (midi-out stream status pgm nil 2)))
+
+(defun midi-note (stream time pitch dur velo chan)
+  (incudine:at time (note-on stream pitch velo chan))
+  (incudine:at (+ time (* incudine::*sample-rate* dur)) (note-off stream pitch 0 chan)))
 
 (defun pm-message->midi-message (pmm)
   (declare (ignore pmm))
@@ -146,37 +200,24 @@
            )
 
 (defmethod write-event ((obj midi) (str incudine-stream) scoretime)
-  (declare (ignore obj str scoretime))
-  ;; (let ((keyn (midi-keynum obj))
-           ;;       (chan (midi-channel obj))
-           ;;       (ampl (midi-amplitude obj))
-           ;;       (sched (scheduling-mode)))
-           ;;   (ensure-velocity ampl keyn)
-           ;;   (ensure-microtuning keyn chan str)
-           ;;   (unless (< keyn 0)
-           ;;     (incudine:writeshort (second (io-open str))
-           ;;                          (if (eq sched ':events)
-           ;;                              (+ (round (* scoretime 1000))
-           ;;                                 (incudine-offset str))
-           ;;                              (incudine:time))
-           ;;                          (incudine:message
-           ;;                           (logior 144 (logand chan 15))
-           ;;                           (logand keyn 127)
-           ;;                           (logand ampl 127)))
-           ;;     (enqueue *qentry-message*
-           ;;      (make-note-off chan keyn 127)
-           ;;      (+ scoretime (midi-duration obj)) nil sched)
-           ;;     )
-           ;;   (values))
-           )
+  (alexandria:if-let (stream (jackmidi-output-stream))
+;;    (format t "~a~%" scoretime)
+    (let ((keyn (midi-keynum obj))
+          (chan (midi-channel obj))
+          (ampl (midi-amplitude obj)))
+      (ensure-velocity ampl keyn)
+      ;;        (ensure-microtuning keyn chan str)
+      (unless (< keyn 0)
+        (midi-note stream (+ (incudine:now) (* incudine::*sample-rate* scoretime)) keyn
+                   (midi-duration obj) ampl chan))))
+  (values))
 
 (defmethod write-event
     ((obj midi-event) (str incudine-stream) scoretime)
-  (break "write-event: ~a to ~a, time: ~a~%" obj str scoretime)
-  (format t "write-event: ~a to ~a, time: ~a~%" obj str scoretime)
-  ;; (midi-write-message (midi-event->midi-message obj) str
-           ;;  scoretime nil)
-           )
+
+
+  ;; (midi-write-message (midi-event->midi-message obj) str scoretime nil)
+  )
 
 (defmethod write-event
            ((obj integer) (str incudine-stream) scoretime)

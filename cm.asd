@@ -80,7 +80,8 @@
                    (:file "cmn")
                    (:file "fomus")
                    (:file "sc")
-                   (:file "parse")))))
+                   (:file "parse")
+                   (:file "incudine-rts")))))
 
 ;;;
 ;;; main functions

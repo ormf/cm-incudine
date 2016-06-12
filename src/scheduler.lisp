@@ -212,8 +212,8 @@
       nil))
 
 (defmethod schedule-object ((obj standard-object) start sched)
-           (enqueue *qentry-object* obj (+ start (object-time obj))
-            nil sched))
+  (enqueue *qentry-object* obj (+ start (object-time obj))
+           nil sched))
 
 (defmethod schedule-object ((obj function) start sched)
            (enqueue *qentry-process* obj start start sched))
