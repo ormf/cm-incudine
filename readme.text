@@ -1,3 +1,17 @@
+This is the repository of an ancient version of Common Music (version
+2.11.1), the presumably last version which ran on Common Lisp dating
+from around 2007-09, before work on common music shifted to
+(scheme-based) cm3. It is not maintained by Rick Taube, but put here
+mainly to provide a functional Common Lisp version as a base for
+extending it to be combined with other common lisp based realtime
+music systems, especially incudine
+(http://incudine.sourceforge.net). For the (much extended) current
+version please refer to
+http://www.sourceforge.net/projects/commonmusic. The README below is
+the orginial text from the old version. It is not up to date!
+
+---------------------------------------------------------------------
+
 This is the README for Common Music (CM). Common Music is released
 under the GNU Software License.  See  the file doc/gpl.text for the
 terms of this agreement. 
