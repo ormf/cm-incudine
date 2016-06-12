@@ -14,8 +14,8 @@
 ;;; **********************************************************************
 
 ;;; $Name$
-;;; $Revision$
-;;; $Date$
+;;; $Revision: 1369 $
+;;; $Date: 2007-08-10 14:43:33 +0200 (Fri, 10 Aug 2007) $
 
 (in-package :cl-user)
 
@@ -76,6 +76,16 @@
                  :defaults here)))
    (namestring (merge-pathnames file here))))
 
+;;(unless (find-package :clm)
+;;  (load (srcfile "clm-stubs.lisp")))
+;;(unless (find-package :cmn)
+;;  (load (srcfile "cmn-stubs.lisp")))
+;;(unless (find-package :fomus)
+;;  (load (srcfile "fomus-stubs.lisp")))
+;;(unless t ;(find-package :cmn)
+;;  (load (srcfile "midishare" "midishare-stubs.lisp")))
+;;(load (srcfile "pkg.lisp"))
+
 (defun gencm (&rest args &aux verb)
   (when (eql (car args) :verbose)
     (pop args)
@@ -90,10 +100,13 @@
       (stocl (srcfile "scheduler.scm") :verbose verb)
       (stocl (srcfile "sco.scm") :verbose verb)
       (stocl (srcfile "clm.scm") :verbose verb)
+;;      (stocl (srcfile "clm2.scm") :verbose verb)
       (stocl (srcfile "cmn.scm") :verbose verb)
       (stocl (srcfile "midi1.scm") :verbose verb)
       (stocl (srcfile "midi2.scm") :verbose verb)
       (stocl (srcfile "midi3.scm") :verbose verb)
+      (stocl (srcfile "midishare" "midishare.scm") :verbose verb)
+      (stocl (srcfile "midishare" "player.scm") :verbose verb)
       (stocl (srcfile "data.scm") :verbose verb)
       (stocl (srcfile "scales.scm") :verbose verb)
       (stocl (srcfile "spectral.scm") :verbose verb)

@@ -5,8 +5,8 @@
 ;;; See http://www.cliki.net/LLGPL for the text of this agreement.
 ;;; **********************************************************************
 
-;;; $Revision$
-;;; $Date$
+;;; $Revision: 1531 $
+;;; $Date: 2008-01-09 18:37:03 +0100 (Wed, 09 Jan 2008) $
 
 (in-package cm)
 

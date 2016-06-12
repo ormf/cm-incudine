@@ -14,8 +14,8 @@
 ;;; **********************************************************************
 
 ;;; $Name$
-;;; $Revision$
-;;; $Date$
+;;; $Revision: 1180 $
+;;; $Date: 2007-01-06 17:22:26 +0100 (Sat, 06 Jan 2007) $
 
 ;;; a few of these that cm uses are defined in level1.lisp
 ;;; cm cltl sources do not depend on any definitions in this file
@@ -222,7 +222,7 @@
 (defscheme char-numeric? digit-char-p)
 
 (defscheme char-whitespace? (c)
-  (find c '(#\space #\tab #\return)))
+  (find c '(#\space #\tab #\return #\newline)))
 
 (defscheme char-upper-case? upper-case-p)
 

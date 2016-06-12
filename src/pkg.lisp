@@ -14,8 +14,8 @@
 ;;; **********************************************************************
 
 ;;; $Name$
-;;; $Revision$
-;;; $Date$
+;;; $Revision: 1531 $
+;;; $Date: 2008-01-09 18:37:03 +0100 (Wed, 09 Jan 2008) $
 
 (in-package :cl-user)
 
@@ -31,7 +31,7 @@
   ;; "Attempt to call ($FN ...) without $SYS loaded."
   (cond ((consp name)
          (ecase (car name)
-           (setf
+           (setf 
             (unless type (setq type :defun))
             (unless args (setq args '(a b))))
            (special
@@ -41,9 +41,9 @@
          (unless type (setq type :defun))
          (unless args (setq args '(&rest args)))))
   (let* ((vars (loop for x in args
-                     for n = (if (consp x) (car x) x)
-                     unless (member n lambda-list-keywords)
-                     collect n))
+                  for n = (if (consp x) (car x) x)
+                  unless (member n lambda-list-keywords)
+                  collect n))
          (str (if (eql (car args) '&rest)
                   (format nil
                           "Attempt to call (~A:~A~~{ ~~S~~}) without ~A loaded."
@@ -63,10 +63,12 @@
                          ;; calls based on analysis of error condition
                          ;; negating any return values
                          #+cmu (if *package* (error ,str ,@vars) , (car vars))
-                         #-cmu (error ,str ,@vars))))
+                         #-cmu (error ,str ,@vars)
+                         )))
       (:defun `(defun ,name ,args
                  #+cmu (if *package* (error ,str ,@vars) ,(car vars))
-                 #-cmu (error ,str ,@vars)))
+                 #-cmu (error ,str ,@vars)
+                 ))      
       (:proclaim `(proclaim (quote ,name)))))))
 
 (export '(defstub) :cl-user)
@@ -104,7 +106,8 @@
 (defstub (special mus-next mus-aifc mus-bshort mus-riff
                            mus-lshort *clm-with-sound-depth*
                            *clm-file-name* *clm-channels*
-                           *clm-srate* *definstrument-hook*)))
+                           *clm-srate* *definstrument-hook*))
+)
 
 ;;;
 ;;; CMN package stubs
@@ -134,7 +137,8 @@
 (defstub add-data-1)
 (defstub init-clm-input)
 (defstub add-note-to-staff)
-(defstub (special *exact-rhythms* staff-descriptors)))
+(defstub (special *exact-rhythms* staff-descriptors))
+)
 
 ;;;
 ;;; Fomus stubs
@@ -143,6 +147,7 @@
 #-fomus
 (defpackage :fomus
   (:use :common-lisp)
+;  #+(or allegro lispworks clisp sbcl) (:shadow #:rest)
   (:import-from :cl-user #:defstub)
   (:export #:fomus #:event-base #:part #:note #:rest #:timesig
            #:keysig #:meas #:event-off #:obj-id #:obj-partid
@@ -154,6 +159,20 @@
 
 #-fomus
 (progn
+;(defclass event-base ()
+;  ((off :accessor event-off :initarg :off)
+;   (partid :accessor event-partid :initarg :partid)))
+;(defclass note (event-base) 
+;  ((dur :accessor event-dur :initarg :dur)
+;   (marks :accessor event-marks :initarg :marks)
+;   (note :accessor event-note :initarg :note)))
+;(defclass part ()
+;  ((name :accessor part-name :initarg :name)
+;   (events :accessor part-events :initarg :events)
+;   (instr :accessor part-instr :initarg :instr)
+;   (opts :accessor part-opts :initarg :opts)
+;   (partid :accessor part-partid :initarg :partid)))
+
 (defclass fomusobj-base ()
  ((id :accessor obj-id :initform nil :initarg :id)))
 (defclass event-base (fomusobj-base)
@@ -181,7 +200,230 @@
 (defstub make-note)
 (defstub get-instr-syms)
 (defstub fomus-file)
-(defstub (special *parts*)))
+(defstub (special *parts*))
+)
+
+;;; rts
+
+#-rts
+(defpackage :rts
+  (:use :common-lisp)
+  (:import-from :cl-user #:defstub)
+  (:export #:scheduler-start #:scheduler-stop
+	   #:scheduler-pause #:scheduler-continue #:scheduler-flush
+	   #:scheduler-state? #:scheduler-enqueue
+	   #:scheduler-lock-lisp #:scheduler-unlock-lisp
+	   #:scheduler-add-hook! #:scheduler-remove-hook!
+	   #:scheduler-hook-set! #:scheduler-time #:*time-format*
+	   #:*priority* #:*policy* #:*resolution* #:*error-format*
+	   #:current-thread #:rts-thread?
+	   #:random-seed #:between #:rescale #:odds #:pickl #:drunk 
+	   #:wander #:shuffle #:interpl #:rhythm))
+
+(in-package :rts)
+
+#-rts
+(progn
+(defstub scheduler-start)
+(defstub scheduler-stop)
+(defstub scheduler-pause)
+(defstub scheduler-continue)
+(defstub scheduler-flush)
+(defstub scheduler-state?)
+(defstub scheduler-enqueue)
+(defstub scheduler-lock-lisp)
+(defstub scheduler-unlock-lisp)
+(defstub scheduler-add-hook!)
+(defstub scheduler-remove-hook!)
+(defstub scheduler-hook-set!)
+(defstub enqueue)
+(defstub scheduler-time)
+(defstub (special *time-format* *priority* *policy* 
+		  *resolution* *error-format*))
+(defstub current-thread)
+(defstub rts-thread)
+(defstub random-seed)
+(defstub between)
+(defstub rescale)
+(defstub odds)
+(defstub pickl)
+(defstub drunk)
+(defstub wander)
+(defstub shuffle)
+(defstub interpl)
+(defstub rhythm)
+)
+
+;;;
+;;; Portmidi
+;;;
+
+#-portmidi
+(defpackage :portmidi
+  (:use :common-lisp) 
+  (:nicknames :pm)
+  (:shadow :initialize :terminate :time :start :stop :abort 
+           :close :read :write :poll :now :output)
+  #+openmcl (:import-from :ccl #:open-shared-library)
+  (:import-from :cl-user #:defstub)
+  (:export #:portmidi #:*portmidi* #:GetDefaultInputDeviceID
+           #:GetDefaultOutputDeviceID #:GetDeviceInfo
+           #:Start #:Time #:OpenInput #:OpenOutput
+           #:Close #:SetFilter #:SetChannelMask #:Poll #:Read
+           #:Message.status #:Message.data1 #:Message.data2 #:Message
+           #:WriteShort #:Write #:WriteSysEx #:EventBufferFree
+           #:EventBufferNew #:EventBufferMap #:EventBufferSet))
+
+(in-package :portmidi)
+
+#-portmidi
+(progn
+(defstub (special *portmidi*))
+(defstub portmidi)
+(defstub GetDefaultInputDeviceID)
+(defstub GetDefaultOutputDeviceID)
+(defstub GetDeviceInfo)
+(defstub Start)
+(defstub Time)
+(defstub OpenInput)
+(defstub OpenOutput)
+(defstub Close)
+(defstub SetFilter)
+(defstub SetChannelMask)
+(defstub Poll)
+(defstub Read)
+(defstub Message.status)
+(defstub Message.data1)
+(defstub Message.data2)
+(defstub Message)
+(defstub Write)
+(defstub WriteShort)
+(defstub WriteSysEx)
+(defstub EventBufferFree)
+(defstub EventBufferNew)
+(defstub EventBufferSet)
+(defstub EventBufferMap)
+)
+
+#-midishare
+(defpackage :midishare
+  (:use :common-lisp)
+  (:nicknames :ms)
+  (:import-from :cl-user #:defstub)
+  (:export #:midishare #:midiGetVersion #:MidiOpen #:MidiClose
+           #:MidiCountAppls #:MidiGetNamedAppl #:MidiGetIndAppl
+           #:MidiErrIndex #:MidiGetName #:MidiConnect #:MidiGetTime
+           #:MidiIsConnected #:MidiSendIm #:MidiSend #:MidiSendAt
+           #:MidiCountEvs #:typeNote #:typeKeyOn #:typeKeyOff
+           #:typeKeyPress #:typeCtrlChange #:typeProgChange
+           #:typeChanPress #:typePitchWheel #:typePitchBend #:typeSongPos
+           #:typeSongSel #:typeClock #:typeStart #:typeContinue #:typeStop
+           #:typeTune #:typeActiveSens #:typeReset #:typeSysEx
+           #:typeStream #:typePrivate #:typeSeqNum #:typeTextual
+           #:typeCopyright #:typeSeqName #:typeInstrName #:typeLyric
+           #:typeMarker #:typeCuePoint #:typeChanPrefix #:typeEndTrack
+           #:typeTempo #:typeSMPTEOffset #:typePortPrefix #:typeKeySign
+           #:typeTimeSign #:MidiNewEv #:port #:chan #:field #:bend #:text
+           #:pitch #:vel #:dur #:ref #:date #:evtype #:MidiCopyEv
+	   #:MidiFreeEv #:MidiAddField #:MidiTask #:MidiSetRcvAlarm
+	   #:MidiGetEv #:nullptrp #:nullptr #:MidiFlushEvs
+           ;; player
+           #:OpenPlayer #:ClosePlayer #:midiNewSeq #:MidiAddSeq
+           #:StartPlayer #:ContPlayer #:StopPlayer #:PausePlayer
+           #:kMuteOn #:kMuteOff #:kSoloOn #:kSoloOff #:kMute
+           #:kSolo #:kExternalSync #:kInternalSync #:kClockSync
+           #:kSMPTESync #:GetAllTrackPlayer #:SetAllTrackPlayer
+           #:GetTrackPlayer #:SetTrackPlayer #:SetParamPlayer
+           #:SetTempoPlayer #:TicksPerQuarterNote
+           #:SetSynchroInPlayer #:MidiNewMidiFileInfos
+           #:MidiFileLoad #:MidiFileSave #:mf-clicks #:mf-format
+           #:mf-timedef #:MidiFreeMidiFileInfos #:MidiFreeSeq
+           #:midishare-receive #:midishare-receive-stop))
+
+(in-package :midishare)
+
+#-midishare
+(progn
+(defparameter %no-midishare 0) ;; stop CMU compiler optimization
+(defun midishare ()
+  ;; return false since MidiShare is not around
+  %no-midishare)
+(defstub midiGetVersion)
+(defstub MidiOpen)
+(defstub MidiClose)
+(defstub MidiCountAppls)
+(defstub MidiCountEvs)
+(defstub MidiGetNamedAppl)
+(defstub MidiGetIndAppl)
+(defstub MidiErrIndex)
+(defstub MidiGetName)
+(defstub MidiConnect)
+(defstub MidiGetTime)
+(defstub MidiIsConnected)
+(defstub MidiSendIm)
+(defstub MidiSend)
+(defstub MidiSendAt)
+(defstub MidiNewEv)
+(defstub port)
+(defstub chan)
+(defstub pitch)
+(defstub vel)
+(defstub dur)
+(defstub field)
+(defstub bend)
+(defstub text)
+(defstub ref)
+(defstub date)
+(defstub evtype)
+(defstub MidiCopyEv)
+(defstub MidiFreeEv)
+(defstub MidiAddField)
+(defstub nullptrp)
+(defstub nullptr)
+(defstub MidiFlushEvs)
+(defstub MidiTask)
+(defstub MidiSetRcvAlarm)
+(defstub MidiGetEv)
+(defstub midishare-receive)
+(defstub midishare-receive-stop)
+(defstub (special typeNote typeKeyOn typeKeyOff typeKeyPress
+                  typeCtrlChange typeProgChange typeChanPress
+                  typePitchWheel typePitchBend typeSongPos typeSongSel
+                  typeClock typeStart typeContinue typeStop typeTune
+                  typeActiveSens typeReset typeSysEx typeStream
+                  typePrivate typeSeqNum typeTextual typeCopyright
+                  typeSeqName typeInstrName typeLyric typeMarker
+                  typeCuePoint typeChanPrefix typeEndTrack typeTempo
+                  typeSMPTEOffset typePortPrefix typeKeySign
+                  typeTimeSign))
+;; player
+(defstub OpenPlayer)
+(defstub ClosePlayer)
+(defstub MidiNewSeq)
+(defstub MidiAddSeq)
+(defstub StartPlayer)
+(defstub ContPlayer)
+(defstub StopPlayer)
+(defstub PausePlayer)
+(defstub GetAllTrackPlayer)
+(defstub SetAllTrackPlayer)
+(defstub GetTrackPlayer)
+(defstub SetTrackPlayer)
+(defstub SetParamPlayer)
+(defstub SetTempoPlayer)
+(defstub SetSynchroInPlayer)
+(defstub MidiNewMidiFileInfos)
+(defstub MidiFileLoad)
+(defstub MidiFileSave)
+(defstub mf-clicks)
+(defstub mf-format)
+(defstub mf-timedef)
+(defstub MidiFreeMidiFileInfos)
+(defstub MidiFreeSeq)
+(defstub (special kMuteOn kMuteOff kSoloOn kSoloOff kMute kSolo
+                           kExternalSync kInternalSync kClockSync
+                           kSMPTESync TicksPerQuarterNote ))
+)
 
 ;;;
 ;;; The CM package definition.
@@ -216,14 +458,15 @@
                 :*definstrument-hook*
                 ;; these are also used by CM but defs don't conflict.
                 ;#+(and clm2 (not clm3)) :graph 
-                :spectrum :env :src :filter :delay)
-  (:import-from :cmn
+                :spectrum :env :src :filter :delay
+                )
+  (:import-from :cmn 
                 :init-clm-input
                 :*exact-rhythms*
                 :score
                 :staff-descriptors
                 :stfdat-staff
-                :staff-data
+                :staff-data 
                 :set-staff-number
                 :set-staff-clef
                 :finish-clm-input
@@ -231,6 +474,35 @@
                 :add-staff
                 :add-data-1
                 :add-note-to-staff)
+  (:import-from :midishare
+		:midishare :midiGetVersion :MidiOpen :MidiClose :MidiCountAppls
+		:MidiGetNamedAppl :MidiGetIndAppl :MidiErrIndex :MidiGetName
+		:MidiConnect :MidiGetTime :MidiIsConnected
+		:MidiSendIm :MidiSend :MidiSendAt :MidiAddSeq
+		:typeNote :typeKeyOn :typeKeyOff :typeKeyPress :typeCtrlChange
+		:typeProgChange :typeChanPress :typePitchWheel :typePitchBend
+		:typeSongPos :typeSongSel :typeClock :typeStart :typeContinue
+		:typeStop :typeTune :typeActiveSens :typeReset :typeSysEx
+		:typeStream :typePrivate :typeSeqNum :typeTextual
+		:typeCopyright :typeSeqName :typeInstrName :typeLyric
+		:typeMarker :typeCuePoint :typeChanPrefix :typeEndTrack
+		:typeTempo :typeSMPTEOffset :typePortPrefix :typeKeySign
+		:typeTimeSign :MidiNewEv :port :chan :field :bend :text :port
+		:ref :date :evtype :MidiCopyEv :MidiFreeEv :MidiAddField
+                :midiTask :midiGetEv :MidiSetRcvAlarm
+                :nullptr :nullptrp :MidiFlushEvs 
+                ;;:MidiShareSync :MidiOpenSync :MidiCloseSync :MidiGetSyncEv
+                
+		:OpenPlayer :ClosePlayer :midiNewSeq
+		:StartPlayer :ContPlayer :StopPlayer :PausePlayer
+		:kMuteOn :kMuteOff :kSoloOn :kSoloOff :kMute :kSolo
+		:kExternalSync :kInternalSync :kClockSync :kSMPTESync
+		:GetAllTrackPlayer :SetAllTrackPlayer
+		:GetTrackPlayer :SetTrackPlayer
+		:SetParamPlayer :SetTempoPlayer
+		:TicksPerQuarterNote
+		:SetSynchroInPlayer :MidiNewMidiFileInfos
+		:MidiFileLoad :MidiFileSave :mf-clicks :mf-format :mf-timedef)
   (:import-from :fomus :fomus :obj-partid :obj-id :part-events
                 :event-base :event-off :event-note :event-dur :make-part
                 :make-note :*parts* :part-opts
@@ -257,7 +529,7 @@
            :midi-sequence-number :midi-sequencer-event
            :midi-smpte-offset :midi-stream :midi-system-event
            :midi-tempo-change :midi-text-event :midi-time-signature
-           :mode :new :next :note-accidental :note
+           :midishare-stream :mode :new :next :note-accidental :note
            :note-name :now :object->cmn :object-name
            :object-parameters :object-time :octave-number :odds
            :output :palindrome :pattern-state :pattern-value :pattern?
@@ -272,6 +544,7 @@
            :pval :pwd :quantize :ran :range :ransegs :remove-object
 	   :remove-subobjects :rescale-envelope :rescale :rewrite
 	   :rewrite-generation :rhythm :rm-spectrum :rotation
+	   :rts :rts-stop :rts-continue :rts? 
 	   :recv :recv-set! :recv?
 	   :save-object :sc-file :scale-max :scale-min
            :scale-mod :scale-order :*scale* :scale= :scale> :scale>=
@@ -280,4 +553,25 @@
            :set-sco-output-hook! :shell :shuffle :*softest* :sprout
            :stop :subcontainers :subobjects :sv :sv+ :sv* :*tempo*
            :tendency :thunk :*time-slots* :transpose :transposer :true
-           :tuning :vary :wait :wait-until :weighting))
+           :tuning :vary :wait :wait-until :weighting)
+  )
+
+
+;;;
+;;; intern and export ms:new, ms:MidiPrintEv, ms:output ms:sprout
+;;;
+
+(in-package :cm)
+
+;; dyntmically add a few symbols to breakout packages...
+(flet ((addsyms (syms pkg)
+         (map nil (lambda (s) (intern (symbol-name s) pkg)) syms)
+         (export (mapcar #'(lambda (x) (find-symbol (symbol-name x) pkg))
+                         syms)
+                 pkg)))
+  (addsyms '(#:output #:now) :portmidi)
+  (addsyms '(#:new #:MidiPrintEv #:sprout #:output #:now
+             #:midishare-receive #:midishare-receive-stop)
+           :midishare)
+  )
+

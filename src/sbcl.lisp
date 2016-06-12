@@ -11,8 +11,8 @@
 ;;; **********************************************************************
 
 ;;; $Name$
-;;; $Revision$
-;;; $Date$
+;;; $Revision: 1368 $
+;;; $Date: 2007-08-10 14:41:53 +0200 (Fri, 10 Aug 2007) $
 
 (in-package :cm)
 
@@ -50,8 +50,8 @@
         (defun set-env-var (var val)
           (sb-posix::putenv (format nil "~a=~a" var val)))))
 
-(defun quit () (sb-ext:exit))
-(defun exit () (sb-ext:exit))
+(defun quit () (sb-ext:quit))
+(defun exit () (quit))
 
 ;(defun class-subclasses (c)
 ;  (let ((subs (sb-pcl:class-direct-subclasses c)))
@@ -88,7 +88,7 @@
 
 #-win32
 (defun shell (cmd &key (wait t) (output t))
-  (sb-ext:run-program "/bin/csh" (list "-fc" cmd)
+  (sb-ext:run-program "/bin/bash" (list "-fc" cmd)
                       :output output :wait wait))
 #+win32
 (defun shell (cmd &key (wait t) (output t))
@@ -241,6 +241,10 @@
 (defgeneric object->midi (obj))
 
 (defgeneric sco-name (obj))
+
+(defgeneric midishare-stream-refnum (obj))
+(defgeneric open-midishare-client (obj name))
+(defgeneric close-midishare-client (obj))
 
 (defgeneric player-play (obj))
 (defgeneric player-set-sync (obj sync))

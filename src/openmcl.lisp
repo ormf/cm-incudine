@@ -11,13 +11,16 @@
 ;;; **********************************************************************
 
 ;;; $Name$
-;;; $Revision$
-;;; $Date$
+;;; $Revision: 1033 $
+;;; $Date: 2006-03-24 17:15:42 +0100 (Fri, 24 Mar 2006) $
 
 (in-package :cm)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (require "pascal-strings"))
+  (ccl::open-shared-library "Carbon.framework/Carbon")
+  (ccl::use-interface-dir :carbon)
+  (require "pascal-strings")
+  )
 
 (pushnew :metaclasses *features*)
 
@@ -33,7 +36,8 @@
           #+:openmcl-partial-mop
           ccl:class-direct-slots
           #+:openmcl-partial-mop
-          ccl:validate-superclass))
+          ccl:validate-superclass
+          ))
 
 #-:openmcl-partial-mop
 (progn
@@ -43,7 +47,8 @@
     (ccl:class-direct-instance-slots class))
   (defmethod validate-class ((class t) (superclass t))
     ;; this is a no-op except in OpenMCL 014
-    t))
+    t)
+  )
 
 (defun finalize-class (class) class t)
 
@@ -65,6 +70,11 @@
 (defun generic-function-name (fn)
   (ccl::function-name fn))
 
+;(defun cd (&optional dir)
+;  (if (null dir)
+;    (namestring (ccl::mac-default-directory))
+;    (ccl::cwd dir)))
+
 (defun cd (&optional (dir (user-homedir-pathname )))
   (ccl::cwd dir))
 
@@ -77,13 +87,14 @@
   (let ((white '(#\space #\tab))
 	(slen (length str))
 	(args '()))
+
     (loop with i = 0 and b and s and l
 	  while (< i slen)
 	  do
 	  ;; flush whitespace
-          (loop while (and (< i slen)
+	  (loop while (and (< i slen)
 			   (member (elt str i) white))
-                do (incf i))
+	    do (incf i))
 	  (unless (< i slen)
 	    (return))
 	  (setf b i)
@@ -94,11 +105,12 @@
 			   (or (not (member (elt str i) white))
 			       (char= l #\\)
 			       s))
-                do (if (char= (elt str i) #\")
-                       (setf s (not s)))
-                   (setf l (elt str i))
-                   (incf i))
-          (push (subseq str b i) args))
+	    do
+	    (if (char= (elt str i) #\")
+	      (setf s (not s)))
+	    (setf l (elt str i))
+	    (incf i))
+	  (push (subseq str b i) args))
     (nreverse args)))
 
 (defun shell (cmd &key (output t) (wait t))
@@ -167,9 +179,17 @@
 
 (defmethod ccl:toplevel-function ((app cm-carbon-application) init-file)
   (declare (ignore init-file) (special *cm-readtable*))
+;;  (setf *package* (find-package :cm))
+;;  (setf *readtable* *cm-readtable*)
+;;  (load-cminit)
+;;  (cm-logo)
   (when (and *cm-swank-port* (find-package ':swank))
     (funcall (find-symbol "CREATE-SERVER" ':swank)
              :port *cm-swank-port*))
+  (ccl::with-pstrs ((msg "Hello from CM!"))
+    (#_StandardAlert #$kAlertNoteAlert msg
+                     (ccl:%null-ptr) (ccl:%null-ptr) (ccl:%null-ptr)))
+  (#_RunApplicationEventLoop)
   (ccl:quit))
 
 (defun cm-image-dir ()
@@ -190,6 +210,58 @@
                           (cm-logo)
                           ))))
   (ccl:save-application path :application-class *cm-application-class*))
+
+
+#||
+(defun save-cm (&optional path &rest args &key carbon slime-directory 
+			  swank-port)
+  ;; if user calls this function, path is path directory to save app in.
+  ;; else (called by make-cm) path is  cm/bin/openmcl*/cm.image
+  (declare (ignore args) (special *cm-readtable*))
+  (let* ((cmroot (symbol-value 'cl-user::*cm-directory*))
+         (appdir (cond ((and (not path)
+                             (boundp 'cl-user::binary-dir))
+                        (symbol-value 'cl-user::binary-dir))
+                       ((ccl:directoryp path)
+                        (probe-file path))
+                       ((equal (pathname-type path) "image")
+                        (make-pathname :name nil :type nil
+                                       :defaults path))
+                       (t
+                        (error "save-cm: ~s is not a directory." 
+                               path))))
+         (bundle (merge-pathnames "CM.app/" appdir))
+         (resdir (merge-pathnames "Contents/Resources/" bundle))
+         (etcdir (merge-pathnames "Contents/Resources/etc/" bundle))
+         (libdir (merge-pathnames "Contents/Resources/lib/" bundle))
+         (exedir (merge-pathnames "Contents/MacOS/" bundle)))
+    (unless (probe-file bundle)
+      (ccl:create-directory bundle)
+      (ccl:create-directory resdir)
+      (ccl:create-directory exedir)
+      (ccl:create-directory libdir)
+      (ccl:create-directory etcdir))
+    ;; CM.app/info.plist
+    (create-info.plist (merge-pathnames "Contents/Info.plist" bundle)
+                       carbon)
+    ;; cm/etc/xemacs -> Contents/Resources/etc/*.el
+    (ccl:copy-file (merge-pathnames "etc/xemacs/listener.el" cmroot)
+                   (merge-pathnames "listener.el" etcdir)
+                   :if-exists :supersede)
+    (ccl:copy-file (merge-pathnames "etc/xemacs/cm.el" cmroot)
+                   (merge-pathnames "cm.el" etcdir)
+                   :if-exists :supersede)
+    ;; dppccl->MacOS/cm
+    (ccl:copy-file (car ccl::*command-line-argument-list*)
+                   (merge-pathnames "cm" exedir)
+                   :if-exists :supersede)
+    (create-cm.sh (merge-pathnames "cm.sh" exedir))
+    (if carbon
+      (carbon-setup slime-directory swank-port)
+      (normal-setup))
+    (ccl:save-application (merge-pathnames "cm.image" exedir)
+                          :application-class *cm-application-class*)))
+||#
 
 (defun normal-setup ()
   (setf ccl::*inhibit-greeting* t)
@@ -265,4 +337,57 @@ fi
 
 #EOF
 "))
-  (shell (format nil "chmod a+x ~A" (namestring path))))
+  (shell (format nil "chmod a+x ~A" (namestring path)))
+  )
+
+;;;
+;;; midishare callbacks moved here.
+;;;
+
+;; (ccl:defcallback run-proc (:unsigned-fullword date :unsigned-halfword refnum
+;;                                               :unsigned-fullword indx
+;;                                               :unsigned-fullword arg1
+;;                                               :unsigned-fullword arg2)
+;;   (declare (ignore arg1 arg2)
+;;            (function rem-proc)
+;;            (special *qstart* *qtime* *qnext* *proctable*))
+;;   (setf *qstart* 0)                     ; unused here
+;;   (setf *qtime* date)                   ; current time
+;;   (setf *qnext* date)                   ; 'wait' sets this ahead.
+;;   ;; funcall the process fn until its next run time is
+;;   ;; in the future or the process is dead (returned nil)
+;;   (do ((proc (elt *proctable* indx))
+;;        (alive t))
+;;       ((or (not alive)                 ; stop if process killed itself
+;;            (> *qnext* *qtime*))        ; or need to reschedule
+;;        (if alive
+;;          (ms:MidiTask run-proc *qnext* refnum indx 0 0)
+;;          (rem-proc indx))
+;;        (values))
+;;     (setq alive (funcall proc))))
+
+;; (ccl:defcallback midi-receive-hook (:unsigned-halfword refnum)
+;;   (declare (special *receive-hook* *mp*))
+;;   (restart-case
+;;       (handler-bind ((error
+;;                       #'(lambda (c)
+;;                           (declare (ignore c))
+;;                           (invoke-restart 'callback-error-exit))))
+;;         ;;; the receive loop...
+;;         (do ((go t)
+;;              (ev (ms:MidiGetEv refnum) (ms:MidiGetEv refnum)))
+;;             ((or (not go) (ms:nullptrp ev))
+;;              (values))
+;;           (if *receive-hook*
+;;             (funcall *receive-hook* ev)
+;;             (setf go nil))))
+;;     (callback-error-exit () 
+;;       (format t "~&Caught error under MIDI callback! Exiting receive.~&")
+;;       ;;(ms:MidiFreeEv e)
+;;       (ms:MidiFlushEvs *mp*)
+;;       (setf *receive-hook* nil)
+;;       (ms:MidiSetRcvAlarm *mp* (ms:nullptr))
+;;       (values))))
+
+;;;
+

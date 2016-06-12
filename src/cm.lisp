@@ -1,18 +1,14 @@
 (in-package :cl-user)
 
-(require :cm)
+(load 
+ (make-pathname :name "cm" :type "asd"
+                :directory (butlast (pathname-directory *load-pathname*))
+                :defaults *load-pathname*))
+
+(use-system :cm)
 
 ;;; add other use-systems here to autoload them at startup. see
 ;;; cm/doc/install.html for more information.
 
-(use-system :t-utility)
-(use-system :ltk)
-(use-system :cl-ambisonics)
-(use-system :osc)
-(use-system :cl-meap)
-(use-system :snd-editor)
-(use-system :cm-plus)
-(use-system :cl-keykit)
-(use-system :cl-scala)
-(use-system :cs-instr)
-(use-system :sc-instr)
+; (use-system :fomus)
+
