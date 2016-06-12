@@ -231,7 +231,7 @@ out."
   (alexandria:if-let (stream (osc-output-stream))
 ;;    (format t "~a~%" scoretime)
     (incudine:at (+ (incudine:now) (* incudine::*sample-rate* scoretime))
-                 (lambda () (apply #'osc::send-osc stream (osc-path obj)
+                 (lambda () (apply #'send-osc stream (osc-path obj)
                               (osc-types obj)
                               (let ((msg (osc-msg obj)))
                                 (if (consp msg) msg (list msg)))))))
