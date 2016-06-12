@@ -45,6 +45,7 @@
     :version "2.12.0"
     :author "Rick Taube <taube (at) uiuc.edu>"
     :licence "LLGPL"
+    :depends-on (:incudine)
     :components
     ((:module "src"
       :serial t
@@ -81,6 +82,7 @@
                    (:file "fomus")
                    (:file "sc")
                    (:file "parse")
+                   (:file "osc")
                    (:file "incudine-rts")))))
 
 ;;;

@@ -111,6 +111,8 @@
   (unless (zerop (length jackmidi::*output-streams*))
     (elt jackmidi::*output-streams* 0)))
 
+(defun osc-output-stream ()
+  *oscout*)
 
 (defun midi-out (stream status data1 data2 data-size)
   "create a closure to defer a call to jm_write_event
@@ -224,6 +226,17 @@ out."
   (declare (ignore obj str scoretime))
   ;; (midi-write-message obj str scoretime nil)
   )
+
+(defmethod write-event ((obj osc) (str incudine-stream) scoretime)
+  (alexandria:if-let (stream (osc-output-stream))
+;;    (format t "~a~%" scoretime)
+    (incudine:at (+ (incudine:now) (* incudine::*sample-rate* scoretime))
+                 (lambda () (apply #'osc::send-osc stream (osc-path obj)
+                              (osc-types obj)
+                              (let ((msg (osc-msg obj)))
+                                (if (consp msg) msg (list msg)))))))
+  (values))
+
 
 (defun output (msg &key at (to *out*) raw)
   (declare (ignore msg at to raw))

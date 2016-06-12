@@ -254,6 +254,7 @@
 (defstub rhythm)
 )
 
+#|
 ;;;
 ;;; Portmidi
 ;;;
@@ -424,6 +425,7 @@
                            kExternalSync kInternalSync kClockSync
                            kSMPTESync TicksPerQuarterNote ))
 )
+|#
 
 ;;;
 ;;; The CM package definition.
@@ -474,35 +476,35 @@
                 :add-staff
                 :add-data-1
                 :add-note-to-staff)
-  (:import-from :midishare
-		:midishare :midiGetVersion :MidiOpen :MidiClose :MidiCountAppls
-		:MidiGetNamedAppl :MidiGetIndAppl :MidiErrIndex :MidiGetName
-		:MidiConnect :MidiGetTime :MidiIsConnected
-		:MidiSendIm :MidiSend :MidiSendAt :MidiAddSeq
-		:typeNote :typeKeyOn :typeKeyOff :typeKeyPress :typeCtrlChange
-		:typeProgChange :typeChanPress :typePitchWheel :typePitchBend
-		:typeSongPos :typeSongSel :typeClock :typeStart :typeContinue
-		:typeStop :typeTune :typeActiveSens :typeReset :typeSysEx
-		:typeStream :typePrivate :typeSeqNum :typeTextual
-		:typeCopyright :typeSeqName :typeInstrName :typeLyric
-		:typeMarker :typeCuePoint :typeChanPrefix :typeEndTrack
-		:typeTempo :typeSMPTEOffset :typePortPrefix :typeKeySign
-		:typeTimeSign :MidiNewEv :port :chan :field :bend :text :port
-		:ref :date :evtype :MidiCopyEv :MidiFreeEv :MidiAddField
-                :midiTask :midiGetEv :MidiSetRcvAlarm
-                :nullptr :nullptrp :MidiFlushEvs 
-                ;;:MidiShareSync :MidiOpenSync :MidiCloseSync :MidiGetSyncEv
+  ;; (:import-from :midishare
+  ;;       	:midishare :midiGetVersion :MidiOpen :MidiClose :MidiCountAppls
+  ;;       	:MidiGetNamedAppl :MidiGetIndAppl :MidiErrIndex :MidiGetName
+  ;;       	:MidiConnect :MidiGetTime :MidiIsConnected
+  ;;       	:MidiSendIm :MidiSend :MidiSendAt :MidiAddSeq
+  ;;       	:typeNote :typeKeyOn :typeKeyOff :typeKeyPress :typeCtrlChange
+  ;;       	:typeProgChange :typeChanPress :typePitchWheel :typePitchBend
+  ;;       	:typeSongPos :typeSongSel :typeClock :typeStart :typeContinue
+  ;;       	:typeStop :typeTune :typeActiveSens :typeReset :typeSysEx
+  ;;       	:typeStream :typePrivate :typeSeqNum :typeTextual
+  ;;       	:typeCopyright :typeSeqName :typeInstrName :typeLyric
+  ;;       	:typeMarker :typeCuePoint :typeChanPrefix :typeEndTrack
+  ;;       	:typeTempo :typeSMPTEOffset :typePortPrefix :typeKeySign
+  ;;       	:typeTimeSign :MidiNewEv :port :chan :field :bend :text :port
+  ;;       	:ref :date :evtype :MidiCopyEv :MidiFreeEv :MidiAddField
+  ;;               :midiTask :midiGetEv :MidiSetRcvAlarm
+  ;;               :nullptr :nullptrp :MidiFlushEvs 
+  ;;               ;;:MidiShareSync :MidiOpenSync :MidiCloseSync :MidiGetSyncEv
                 
-		:OpenPlayer :ClosePlayer :midiNewSeq
-		:StartPlayer :ContPlayer :StopPlayer :PausePlayer
-		:kMuteOn :kMuteOff :kSoloOn :kSoloOff :kMute :kSolo
-		:kExternalSync :kInternalSync :kClockSync :kSMPTESync
-		:GetAllTrackPlayer :SetAllTrackPlayer
-		:GetTrackPlayer :SetTrackPlayer
-		:SetParamPlayer :SetTempoPlayer
-		:TicksPerQuarterNote
-		:SetSynchroInPlayer :MidiNewMidiFileInfos
-		:MidiFileLoad :MidiFileSave :mf-clicks :mf-format :mf-timedef)
+  ;;       	:OpenPlayer :ClosePlayer :midiNewSeq
+  ;;       	:StartPlayer :ContPlayer :StopPlayer :PausePlayer
+  ;;       	:kMuteOn :kMuteOff :kSoloOn :kSoloOff :kMute :kSolo
+  ;;       	:kExternalSync :kInternalSync :kClockSync :kSMPTESync
+  ;;       	:GetAllTrackPlayer :SetAllTrackPlayer
+  ;;       	:GetTrackPlayer :SetTrackPlayer
+  ;;       	:SetParamPlayer :SetTempoPlayer
+  ;;       	:TicksPerQuarterNote
+  ;;       	:SetSynchroInPlayer :MidiNewMidiFileInfos
+  ;;       	:MidiFileLoad :MidiFileSave :mf-clicks :mf-format :mf-timedef)
   (:import-from :fomus :fomus :obj-partid :obj-id :part-events
                 :event-base :event-off :event-note :event-dur :make-part
                 :make-note :*parts* :part-opts
@@ -563,15 +565,15 @@
 
 (in-package :cm)
 
-;; dyntmically add a few symbols to breakout packages...
+;; dynamically add a few symbols to breakout packages...
 (flet ((addsyms (syms pkg)
          (map nil (lambda (s) (intern (symbol-name s) pkg)) syms)
          (export (mapcar #'(lambda (x) (find-symbol (symbol-name x) pkg))
                          syms)
                  pkg)))
-  (addsyms '(#:output #:now) :portmidi)
-  (addsyms '(#:new #:MidiPrintEv #:sprout #:output #:now
-             #:midishare-receive #:midishare-receive-stop)
-           :midishare)
+  ;; (addsyms '(#:output #:now) :portmidi)
+  ;; (addsyms '(#:new #:MidiPrintEv #:sprout #:output #:now
+  ;;            #:midishare-receive #:midishare-receive-stop)
+  ;;          :midishare)
   )
 
