@@ -83,6 +83,7 @@
                    (:file "sc")
                    (:file "parse")
                    (:file "osc")
+                   (:file "rt")
                    (:file "incudine-rts")))))
 
 ;;;

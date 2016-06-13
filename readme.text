@@ -1,14 +1,14 @@
 This is the repository of an ancient version of Common Music (version
 2.12.0), the presumably last version which ran on Common Lisp dating
-from around 2007-09, before work on common music shifted to
+from around 2007-09, before work on Common Music shifted to
 (scheme-based) cm3. It is not maintained by Rick Taube, but put here
-mainly to provide a functional Common Lisp version as a base for
-extending it to be combined with other common lisp based realtime
+mainly to provide a functional Common Lisp version as a basis for
+extending it to be combined with other Common Lisp based realtime
 music systems, especially incudine
 (http://incudine.sourceforge.net). For the (much extended) current
 version please refer to
 http://www.sourceforge.net/projects/commonmusic. The README below is
-the orginial text from the old version. It is not up to date! 
+the orginial text from the old version. It is not up to date!
 
 ---------------------------------------------------------------------
 

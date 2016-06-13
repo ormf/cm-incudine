@@ -15,3 +15,11 @@
   (loop for val in values for i from 0
      do (osc::set-value stream i val))
   (osc:send stream))
+
+(defmacro message2 (stream address types values)
+  "Send a OSC message with OSC ADDRESS, OSC TYPES and arbitrary VALUES."
+  `(progn
+     (osc:start-message ,stream ,address ,types)
+     ,@(loop for val in values for i from 0
+             collect `(osc::set-value ,stream ,i ,val))
+     (osc:send ,stream)))

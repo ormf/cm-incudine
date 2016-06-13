@@ -237,9 +237,11 @@ out."
                                 (if (consp msg) msg (list msg)))))))
   (values))
 
+#|
 
 (defun output (msg &key at (to *out*) raw)
   (declare (ignore msg at to raw))
+  (break "incudine-out")
   ;; (cond
   ;;  ((numberp msg)
   ;;   (incudine:writeshort (second (io-open to))
@@ -252,7 +254,6 @@ out."
   ;;  (t (incudine:write (second (io-open to)) msg raw)))
   (values))
 
-#|
 (defun parse-pm-output (forms clauses ops)
   clauses
   ops

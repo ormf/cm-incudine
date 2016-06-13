@@ -10,6 +10,7 @@
 
 (in-package :cm)
 
+#|
 (defparameter *pm-not-loaded-error* "recv for portmidi not loaded.")
 
 (defmethod recv ((io portmidi-stream) &key resolution priority) io
@@ -22,6 +23,7 @@
            recv-mode io hook (error *pm-not-loaded-error*))
 
 (defmethod recv? ((io portmidi-stream)) (error *pm-not-loaded-error*))
+|#
 
 (defun rtserr (fn args)
   (error "Attempt to call ~s without RTS loaded." (cons fn args)))
