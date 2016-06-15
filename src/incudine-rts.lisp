@@ -222,7 +222,8 @@ out."
           (rem 0.0)
           (dat nil))
       (declare (type fixnum num) (type single-float rem) (type list dat))
-      (cond ((and keyn (symbolp keyn))
+      (cond ((integerp keyn) nil)
+            ((and keyn (symbolp keyn))
              (setf keyn (keynum keyn)))
             ((numberp keyn)
              (setf dat (midi-stream-tunedata incudine-stream))
@@ -262,7 +263,7 @@ out."
 
 (declaim (inline incudine-ensure-velocity))
 (defun incudine-ensure-velocity (keyn ampl)
-  (declare (type (or (integer 0 127) (single-float -1.0 1.0)) ampl))
+  (declare (type (or (integer 0 127) (single-float 0.0 1.0)) ampl))
   (cond ((floatp ampl)
          (if (= ampl 0.0)
              (values -1 0)
