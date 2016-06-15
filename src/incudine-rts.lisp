@@ -77,8 +77,7 @@
            (values))
 
 (defmethod initialize-io ((obj incudine-stream))
-  (declare (ignore obj))
-  )
+  (channel-tuning-init obj))
 
 (defun incudine-open (&rest args)
   (apply #'open-io "incudine-rts.ic" t args))
@@ -111,15 +110,19 @@
   (unless (zerop (length jackmidi::*output-streams*))
     (elt jackmidi::*output-streams* 0)))
 
+(declaim (special *oscout*))
+
 (defun osc-output-stream ()
   *oscout*)
 
+(declaim (inline midi-out))
 (defun midi-out (stream status data1 data2 data-size)
   "create a closure to defer a call to jm_write_event
 out."
   (lambda ()
     (jackmidi:write-short stream (jackmidi:message status data1 data2) data-size)))
 
+(declaim (inline ctl-out))
 (defun ctl-out (stream ccno ccval chan)
   "wrapper for midi ctl-change messages."
   (let ((status (+ chan (ash #b1011 4))))
@@ -128,16 +131,19 @@ out."
 ;;; (defparameter evt1 (ctl-out 1 17 1))
 ;;; (rtevt evt1)
 
+(declaim (inline note-on))
 (defun note-on (stream pitch velo chan)
   "wrapper for midi note-on messages."
   (let ((status (+ chan (ash #b1001 4))))
     (midi-out stream status pitch velo 3)))
 
+(declaim (inline note-off))
 (defun note-off (stream pitch velo chan)
   "wrapper for midi note-on messages."
   (let ((status (+ chan (ash #b1000 4))))
     (midi-out stream status pitch velo 3)))
 
+(declaim (inline pitch-bend))
 (defun pitch-bend (stream bendval chan)
   "wrapper for midi pitchbend messages (range between -1 and 1!)"
   (let* ((status (+ chan (ash #b1000 4)))
@@ -146,11 +152,13 @@ out."
          (high (ash (logand bval #x3f80) -7)))
     (midi-out stream status low high 3)))
 
+(declaim (inline pgm-change))
 (defun pgm-change (stream pgm chan)
   "wrapper for midi program-change messages."
   (let* ((status (+ chan (ash #b1100 4))))
-    (midi-out stream status pgm nil 2)))
+    (midi-out stream status pgm 0 2)))
 
+(declaim (inline midi-note))
 (defun midi-note (stream time pitch dur velo chan)
   (incudine:at time (note-on stream pitch velo chan))
   (incudine:at (+ time (* incudine::*sample-rate* dur)) (note-off stream pitch 0 chan)))
@@ -201,25 +209,98 @@ out."
            ;;                              obj))))
            )
 
+(defun incudine-ensure-microtuning (keyn chan stream incudine-stream time)
+  (declare (type (or fixnum single-float symbol) keyn)
+           (type (integer 0 15) chan)
+           (type jackmidi:output-stream stream)
+           (type incudine.util:sample time)
+           (optimize speed))
+  (flet ((truncate-float (k &optional round-p)
+           (declare (type (single-float -2e2 2e4) k))
+           (if round-p (round k) (floor k))))
+    (let ((num 0)
+          (rem 0.0)
+          (dat nil))
+      (declare (type fixnum num) (type single-float rem) (type list dat))
+      (cond ((and keyn (symbolp keyn))
+             (setf keyn (keynum keyn)))
+            ((numberp keyn)
+             (setf dat (midi-stream-tunedata incudine-stream))
+             (cond ((null dat)
+                    (unless (integerp keyn)
+                      (setf keyn (truncate-float keyn t))))
+                   ((eq (first dat) t)
+                    (setf num (second dat))
+                    (unless (integerp keyn)
+                      (let ((int (truncate-float keyn)))
+                        (setf rem (- keyn int))
+                        (setf keyn int)))
+                    (if (and *midi-skip-drum-channel*
+                             (= (+ (the fixnum (fourth dat)) num) 8))
+                        (incf num))
+                    (setf num (if (< num (the fixnum (third dat))) (1+ num) 0))
+                    (rplaca (cdr dat) num)
+                    (setf chan (+ (the fixnum (fourth dat)) num))
+                    (let* ((width (or (fifth dat) 2))
+                           (bend (truncate-float
+                                  (rescale rem (- width) width 0 16383) t)))
+                      (declare (type (signed-byte 16) width bend))
+                      (incudine:at time
+                        (midi-out stream
+                          (logior #.(ash +ml-pitch-bend-opcode+ 4) chan)
+                          (ldb (byte 7 0) bend) (ldb (byte 7 7) bend) 3))))
+                   (t (setf num (second dat))
+                      (let* ((qkey (quantize keyn (/ 1.0 num)))
+                             (int (truncate-float qkey)))
+                        (declare (type single-float qkey) (type fixnum int))
+                        (setf rem (- qkey int))
+                        (setf keyn int))
+                      (setf chan (+ (the fixnum (first dat))
+                                    (truncate-float (* rem num)))))))
+            (t (error "midi keynum ~s not key number or note." keyn)))
+      (values keyn chan))))
+
+(declaim (inline incudine-ensure-velocity))
+(defun incudine-ensure-velocity (keyn ampl)
+  (declare (type (or (integer 0 127) (single-float -1.0 1.0)) ampl))
+  (cond ((floatp ampl)
+         (if (= ampl 0.0)
+             (values -1 0)
+             (values keyn (floor (* ampl 127)))))
+        (t (if (= ampl 0)
+               (values -1 0)
+               (values keyn ampl)))))
+
 (defmethod write-event ((obj midi) (str incudine-stream) scoretime)
+  (declare (type (or fixnum single-float) scoretime))
   (alexandria:if-let (stream (jackmidi-output-stream))
 ;;    (format t "~a~%" scoretime)
-    (let ((keyn (midi-keynum obj))
-          (chan (midi-channel obj))
-          (ampl (midi-amplitude obj)))
-      (ensure-velocity ampl keyn)
-      ;;        (ensure-microtuning keyn chan str)
-      (unless (< keyn 0)
-        (midi-note stream (+ (incudine:now) (* incudine::*sample-rate* scoretime)) keyn
-                   (midi-duration obj) ampl chan))))
-  (values))
+    (multiple-value-bind (keyn ampl)
+        (incudine-ensure-velocity (midi-keynum obj) (midi-amplitude obj))
+      (declare (type (integer 0 127) ampl))
+      (let ((time (+ (incudine:now) (* incudine.util:*sample-rate* scoretime))))
+        (multiple-value-bind (keyn chan)
+            (incudine-ensure-microtuning keyn (midi-channel obj) stream str
+                                         ;; pitch bend one sample before the note
+                                         (1- time))
+          (declare (type (signed-byte 8) keyn chan))
+          (unless (< keyn 0)
+            (midi-note stream time keyn
+                       (the (or fixnum single-float) (midi-duration obj))
+                       ampl chan))))
+      (values))))
 
 (defmethod write-event
     ((obj midi-event) (str incudine-stream) scoretime)
-
-
-  ;; (midi-write-message (midi-event->midi-message obj) str scoretime nil)
-  )
+  (alexandria:if-let (stream (jackmidi-output-stream))
+    (typecase obj
+      (midi-channel-event
+       (incudine.edf:at (+ (incudine:now)
+                           (* incudine.util:*sample-rate* scoretime))
+         (midi-out stream
+           (logior (ash (midi-event-opcode obj) 4) (midi-event-channel obj))
+           (midi-event-data1 obj) (midi-event-data2 obj) 3))))))
+;; (midi-write-message (midi-event->midi-message obj) str scoretime nil)
 
 (defmethod write-event
            ((obj integer) (str incudine-stream) scoretime)

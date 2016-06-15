@@ -563,17 +563,16 @@
 ;;; intern and export ms:new, ms:MidiPrintEv, ms:output ms:sprout
 ;;;
 
-(in-package :cm)
+;; (in-package :cm)
 
-;; dynamically add a few symbols to breakout packages...
-(flet ((addsyms (syms pkg)
-         (map nil (lambda (s) (intern (symbol-name s) pkg)) syms)
-         (export (mapcar #'(lambda (x) (find-symbol (symbol-name x) pkg))
-                         syms)
-                 pkg)))
-  ;; (addsyms '(#:output #:now) :portmidi)
-  ;; (addsyms '(#:new #:MidiPrintEv #:sprout #:output #:now
-  ;;            #:midishare-receive #:midishare-receive-stop)
-  ;;          :midishare)
-  )
-
+;; ;; dynamically add a few symbols to breakout packages...
+;; (flet ((addsyms (syms pkg)
+;;          (map nil (lambda (s) (intern (symbol-name s) pkg)) syms)
+;;          (export (mapcar #'(lambda (x) (find-symbol (symbol-name x) pkg))
+;;                          syms)
+;;                  pkg)))
+;;   ;; (addsyms '(#:output #:now) :portmidi)
+;;   ;; (addsyms '(#:new #:MidiPrintEv #:sprout #:output #:now
+;;   ;;            #:midishare-receive #:midishare-receive-stop)
+;;   ;;          :midishare)
+;;   )

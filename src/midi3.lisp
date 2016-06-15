@@ -219,8 +219,7 @@
 (defmacro ensure-microtuning (keyn chan stream)
   `(let ((num nil) (rem nil) (dat nil))
      (cond
-      ((integerp ,keyn)
-       (if (not (integerp ,keyn)) (setf ,keyn (round ,keyn))))
+      ((integerp ,keyn) nil)
       ((and ,keyn (symbolp ,keyn)) (setf ,keyn (keynum ,keyn)))
       ((numberp ,keyn) (setf dat (midi-stream-tunedata ,stream))
        (if (null dat)
