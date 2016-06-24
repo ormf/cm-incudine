@@ -26,105 +26,105 @@
 
 (defparameter +enc-data-2-byte+ (byte 7 0))
 
-(alexandria:define-constant +enc-route-offs+ -22)
+(defparameter +enc-route-offs+ -22)
 
-(alexandria:define-constant +enc-lower-status-offs+ -18)
+(defparameter +enc-lower-status-offs+ -18)
 
-(alexandria:define-constant +enc-upper-status-offs+ -10)
+(defparameter +enc-upper-status-offs+ -10)
 
-(alexandria:define-constant +enc-swapped-status-offs+ -14)
+(defparameter +enc-swapped-status-offs+ -14)
 
-(alexandria:define-constant +enc-logical-channel-offs+ +enc-lower-status-offs+)
+(defparameter +enc-logical-channel-offs+ +enc-lower-status-offs+)
 
-(alexandria:define-constant +enc-opcode-offs+ +enc-upper-status-offs+)
+(defparameter +enc-opcode-offs+ +enc-upper-status-offs+)
 
-(alexandria:define-constant +enc-data-1-offs+ -7)
+(defparameter +enc-data-1-offs+ -7)
 
-(alexandria:define-constant +enc-data-2-offs+ 0)
+(defparameter +enc-data-2-offs+ 0)
 
-(alexandria:define-constant +enc-note-off-mask+ 4294852480)
+(defparameter +enc-note-off-mask+ 4294852480)
 
-(alexandria:define-constant +ml-note-off-opcode+ 8)
+(defparameter +ml-note-off-opcode+ 8)
 
-(alexandria:define-constant +ml-note-on-opcode+ 9)
+(defparameter +ml-note-on-opcode+ 9)
 
-(alexandria:define-constant +ml-key-pressure-opcode+ 10)
+(defparameter +ml-key-pressure-opcode+ 10)
 
-(alexandria:define-constant +ml-control-change-opcode+ 11)
+(defparameter +ml-control-change-opcode+ 11)
 
-(alexandria:define-constant +ml-program-change-opcode+ 12)
+(defparameter +ml-program-change-opcode+ 12)
 
-(alexandria:define-constant +ml-channel-pressure-opcode+ 13)
+(defparameter +ml-channel-pressure-opcode+ 13)
 
-(alexandria:define-constant +ml-pitch-bend-opcode+ 14)
+(defparameter +ml-pitch-bend-opcode+ 14)
 
-(alexandria:define-constant +ml-default-note-on-velocity+ 64)
+(defparameter +ml-default-note-on-velocity+ 64)
 
-(alexandria:define-constant +ml-default-note-off-velocity+ 64)
+(defparameter +ml-default-note-off-velocity+ 64)
 
-(alexandria:define-constant +ml-msg-sysex-type+ 15)
+(defparameter +ml-msg-sysex-type+ 15)
 
-(alexandria:define-constant +ml-msg-mtc-quarter-frame-type+ 31)
+(defparameter +ml-msg-mtc-quarter-frame-type+ 31)
 
-(alexandria:define-constant +ml-msg-song-position-type+ 47)
+(defparameter +ml-msg-song-position-type+ 47)
 
-(alexandria:define-constant +ml-msg-song-select-type+ 63)
+(defparameter +ml-msg-song-select-type+ 63)
 
-(alexandria:define-constant +ml-msg-cable-select-type+ 95)
+(defparameter +ml-msg-cable-select-type+ 95)
 
-(alexandria:define-constant +ml-msg-tune-request-type+ 111)
+(defparameter +ml-msg-tune-request-type+ 111)
 
-(alexandria:define-constant +ml-msg-eox-type+ 127)
+(defparameter +ml-msg-eox-type+ 127)
 
-(alexandria:define-constant +ml-msg-timing-clock-type+ 143)
+(defparameter +ml-msg-timing-clock-type+ 143)
 
-(alexandria:define-constant +ml-msg-timing-tick-type+ 159)
+(defparameter +ml-msg-timing-tick-type+ 159)
 
-(alexandria:define-constant +ml-msg-start-type+ 175)
+(defparameter +ml-msg-start-type+ 175)
 
-(alexandria:define-constant +ml-msg-continue-type+ 191)
+(defparameter +ml-msg-continue-type+ 191)
 
-(alexandria:define-constant +ml-msg-stop-type+ 207)
+(defparameter +ml-msg-stop-type+ 207)
 
-(alexandria:define-constant +ml-msg-active-sensing-type+ 239)
+(defparameter +ml-msg-active-sensing-type+ 239)
 
-(alexandria:define-constant +ml-msg-system-reset-type+ 255)
+(defparameter +ml-msg-system-reset-type+ 255)
 
-(alexandria:define-constant +ml-meta-type+ 0)
+(defparameter +ml-meta-type+ 0)
 
-(alexandria:define-constant +ml-file-meta-marker+ 255)
+(defparameter +ml-file-meta-marker+ 255)
 
-(alexandria:define-constant +ml-file-sequence-number-opcode+ 0)
+(defparameter +ml-file-sequence-number-opcode+ 0)
 
-(alexandria:define-constant +ml-file-text-event-opcode+ 1)
+(defparameter +ml-file-text-event-opcode+ 1)
 
-(alexandria:define-constant +ml-file-copyright-note-opcode+ 2)
+(defparameter +ml-file-copyright-note-opcode+ 2)
 
-(alexandria:define-constant +ml-file-sequence/track-name-opcode+ 3)
+(defparameter +ml-file-sequence/track-name-opcode+ 3)
 
-(alexandria:define-constant +ml-file-instrument-name-opcode+ 4)
+(defparameter +ml-file-instrument-name-opcode+ 4)
 
-(alexandria:define-constant +ml-file-lyric-opcode+ 5)
+(defparameter +ml-file-lyric-opcode+ 5)
 
-(alexandria:define-constant +ml-file-marker-opcode+ 6)
+(defparameter +ml-file-marker-opcode+ 6)
 
-(alexandria:define-constant +ml-file-cue-point-opcode+ 7)
+(defparameter +ml-file-cue-point-opcode+ 7)
 
-(alexandria:define-constant +ml-file-midi-channel-opcode+ 32)
+(defparameter +ml-file-midi-channel-opcode+ 32)
 
-(alexandria:define-constant +ml-file-midi-port-opcode+ 33)
+(defparameter +ml-file-midi-port-opcode+ 33)
 
-(alexandria:define-constant +ml-file-eot-opcode+ 47)
+(defparameter +ml-file-eot-opcode+ 47)
 
-(alexandria:define-constant +ml-file-tempo-change-opcode+ 81)
+(defparameter +ml-file-tempo-change-opcode+ 81)
 
-(alexandria:define-constant +ml-file-smpte-offset-opcode+ 84)
+(defparameter +ml-file-smpte-offset-opcode+ 84)
 
-(alexandria:define-constant +ml-file-time-signature-opcode+ 88)
+(defparameter +ml-file-time-signature-opcode+ 88)
 
-(alexandria:define-constant +ml-file-key-signature-opcode+ 89)
+(defparameter +ml-file-key-signature-opcode+ 89)
 
-(alexandria:define-constant +ml-file-sequencer-event-opcode+ 127)
+(defparameter +ml-file-sequencer-event-opcode+ 127)
 
 (defun midimsg-data1 (message) (ldb +enc-data-1-byte+ message))
 
@@ -1002,7 +1002,7 @@
 
 (defcontroller +channel-volume+ 7)
 
-(alexandria:define-constant +volume+ 7)
+(defparameter +volume+ 7)
 
 (defcontroller +balance+ 8)
 
@@ -1040,7 +1040,7 @@
 
 (defcontroller +channel-volume-fine+ 39 "Channel Volume (Fine)")
 
-(alexandria:define-constant +volume-fine+ 39)
+(defparameter +volume-fine+ 39)
 
 (defcontroller +balance-fine+ 40 "Balance (Fine)")
 
@@ -1067,9 +1067,9 @@
 
 (defcontroller +hold-1+ 64)
 
-(alexandria:define-constant +sustain+ 64)
+(defparameter +sustain+ 64)
 
-(alexandria:define-constant +damper-pedal+ 64)
+(defparameter +damper-pedal+ 64)
 
 (defcontroller +portamento+ 65)
 
@@ -1083,23 +1083,23 @@
 
 (defcontroller +sound-control-1+ 70)
 
-(alexandria:define-constant +sound-variation+ 70)
+(defparameter +sound-variation+ 70)
 
 (defcontroller +sound-control-2+ 71)
 
-(alexandria:define-constant +sound-timbre+ 71)
+(defparameter +sound-timbre+ 71)
 
 (defcontroller +sound-control-3+ 72)
 
-(alexandria:define-constant +sound-release-time+ 72)
+(defparameter +sound-release-time+ 72)
 
 (defcontroller +sound-control-4+ 73)
 
-(alexandria:define-constant +sound-attack-time+ 73)
+(defparameter +sound-attack-time+ 73)
 
 (defcontroller +sound-control-5+ 74)
 
-(alexandria:define-constant +sound-brightness+ 74)
+(defparameter +sound-brightness+ 74)
 
 (defcontroller +sound-control-6+ 75)
 
@@ -1127,31 +1127,31 @@
 
 (defcontroller +effects-1-depth+ 91)
 
-(alexandria:define-constant +effects-level+ 91)
+(defparameter +effects-level+ 91)
 
 (defcontroller +effects-2-depth+ 92)
 
-(alexandria:define-constant +tremolo-level+ 92)
+(defparameter +tremolo-level+ 92)
 
 (defcontroller +effects-3-depth+ 93)
 
-(alexandria:define-constant +chorus-level+ 93)
+(defparameter +chorus-level+ 93)
 
 (defcontroller +effects-4-depth+ 94)
 
-(alexandria:define-constant +detune-level+ 94)
+(defparameter +detune-level+ 94)
 
 (defcontroller +effects-5-depth+ 95)
 
-(alexandria:define-constant +phasor-level+ 95)
+(defparameter +phasor-level+ 95)
 
 (defcontroller +data-entry-+1+ 96)
 
-(alexandria:define-constant +data-entry-increment+ 96)
+(defparameter +data-entry-increment+ 96)
 
 (defcontroller +data-entry--1+ 97 "Data Entry -1")
 
-(alexandria:define-constant +data-entry-decrement+ 97)
+(defparameter +data-entry-decrement+ 97)
 
 (defcontroller +non-registered-parameter-number-fine+ 98
  "Non-Registered Parameter Number (Fine)")
@@ -1370,195 +1370,195 @@
 
 (defgmpatch +lead-1-square+ 80 "Lead 1 (Square)")
 
-(alexandria:define-constant +lead-1+ 80)
+(defparameter +lead-1+ 80)
 
-(alexandria:define-constant +square-lead+ 80)
+(defparameter +square-lead+ 80)
 
-(alexandria:define-constant +square+ 80)
+(defparameter +square+ 80)
 
 (defgmpatch +lead-2-sawtooth+ 81 "Lead 2 (Sawtooth)")
 
-(alexandria:define-constant +lead-2+ 81)
+(defparameter +lead-2+ 81)
 
-(alexandria:define-constant +sawtooth-lead+ 81)
+(defparameter +sawtooth-lead+ 81)
 
-(alexandria:define-constant +sawtooth+ 81)
+(defparameter +sawtooth+ 81)
 
 (defgmpatch +lead-3-calliope+ 82 "Lead 3 (Calliope)")
 
-(alexandria:define-constant +lead-3+ 82)
+(defparameter +lead-3+ 82)
 
-(alexandria:define-constant +calliope-lead+ 82)
+(defparameter +calliope-lead+ 82)
 
-(alexandria:define-constant +calliope+ 82)
+(defparameter +calliope+ 82)
 
 (defgmpatch +lead-4-chiff+ 83 "Lead 4 (Chiff)")
 
-(alexandria:define-constant +lead-4+ 83)
+(defparameter +lead-4+ 83)
 
-(alexandria:define-constant +chiff-lead+ 83)
+(defparameter +chiff-lead+ 83)
 
-(alexandria:define-constant +chiff+ 83)
+(defparameter +chiff+ 83)
 
 (defgmpatch +lead-5-charang+ 84 "Lead 5 (Charang)")
 
-(alexandria:define-constant +lead-5+ 84)
+(defparameter +lead-5+ 84)
 
-(alexandria:define-constant +charang-lead+ 84)
+(defparameter +charang-lead+ 84)
 
-(alexandria:define-constant +charang+ 84)
+(defparameter +charang+ 84)
 
 (defgmpatch +lead-6-voice+ 85 "Lead 6 (Voice)")
 
-(alexandria:define-constant +lead-6+ 85)
+(defparameter +lead-6+ 85)
 
-(alexandria:define-constant +voice-lead+ 85)
+(defparameter +voice-lead+ 85)
 
-(alexandria:define-constant +voice+ 85)
+(defparameter +voice+ 85)
 
 (defgmpatch +lead-7-fifths+ 86 "Lead 7 (Fifths)")
 
-(alexandria:define-constant +lead-7+ 86)
+(defparameter +lead-7+ 86)
 
-(alexandria:define-constant +fifths-lead+ 86)
+(defparameter +fifths-lead+ 86)
 
-(alexandria:define-constant +fifths+ 86)
+(defparameter +fifths+ 86)
 
 (defgmpatch +lead-8-bass+lead+ 87 "Lead 8 (Bass+Lead)")
 
-(alexandria:define-constant +lead-8+ 87)
+(defparameter +lead-8+ 87)
 
-(alexandria:define-constant +bass+lead-lead+ 87)
+(defparameter +bass+lead-lead+ 87)
 
-(alexandria:define-constant +bass+lead+ 87)
+(defparameter +bass+lead+ 87)
 
 (defgmpatch +pad-1-new-age+ 88 "Pad 1 (New Age)")
 
-(alexandria:define-constant +pad-1+ 88)
+(defparameter +pad-1+ 88)
 
-(alexandria:define-constant +new-age-pad+ 88)
+(defparameter +new-age-pad+ 88)
 
-(alexandria:define-constant +new-age+ 88)
+(defparameter +new-age+ 88)
 
 (defgmpatch +pad-2-warm+ 89 "Pad 2 (Warm)")
 
-(alexandria:define-constant +pad-2+ 89)
+(defparameter +pad-2+ 89)
 
-(alexandria:define-constant +warm-pad+ 89)
+(defparameter +warm-pad+ 89)
 
-(alexandria:define-constant +warm+ 89)
+(defparameter +warm+ 89)
 
 (defgmpatch +pad-3-polysynth+ 90 "Pad 3 (Polysynth)")
 
-(alexandria:define-constant +pad-3+ 90)
+(defparameter +pad-3+ 90)
 
-(alexandria:define-constant +polysynth-pad+ 90)
+(defparameter +polysynth-pad+ 90)
 
-(alexandria:define-constant +polysynth+ 90)
+(defparameter +polysynth+ 90)
 
 (defgmpatch +pad-4-choir+ 91 "Pad 4 (Choir)")
 
-(alexandria:define-constant +pad-4+ 91)
+(defparameter +pad-4+ 91)
 
-(alexandria:define-constant +choir-pad+ 91)
+(defparameter +choir-pad+ 91)
 
-(alexandria:define-constant +choir+ 91)
+(defparameter +choir+ 91)
 
 (defgmpatch +pad-5-bowed+ 92 "Pad 5 (Bowed)")
 
-(alexandria:define-constant +pad-5+ 92)
+(defparameter +pad-5+ 92)
 
-(alexandria:define-constant +bowed-pad+ 92)
+(defparameter +bowed-pad+ 92)
 
-(alexandria:define-constant +bowed+ 92)
+(defparameter +bowed+ 92)
 
 (defgmpatch +pad-6-metallic+ 93 "Pad 6 (Metallic)")
 
-(alexandria:define-constant +pad-6+ 93)
+(defparameter +pad-6+ 93)
 
-(alexandria:define-constant +metallic-pad+ 93)
+(defparameter +metallic-pad+ 93)
 
-(alexandria:define-constant +metallic+ 93)
+(defparameter +metallic+ 93)
 
 (defgmpatch +pad-7-halo+ 94 "Pad 7 (Halo)")
 
-(alexandria:define-constant +pad-7+ 94)
+(defparameter +pad-7+ 94)
 
-(alexandria:define-constant +halo-pad+ 94)
+(defparameter +halo-pad+ 94)
 
-(alexandria:define-constant +halo+ 94)
+(defparameter +halo+ 94)
 
 (defgmpatch +pad-8-sweep+ 95 "Pad 8 (Sweep)")
 
-(alexandria:define-constant +pad-8+ 95)
+(defparameter +pad-8+ 95)
 
-(alexandria:define-constant +sweep-pad+ 95)
+(defparameter +sweep-pad+ 95)
 
-(alexandria:define-constant +sweep+ 95)
+(defparameter +sweep+ 95)
 
 (defgmpatch +fx-1-rain+ 96 "FX 1 (Rain)")
 
-(alexandria:define-constant +fx-1+ 96)
+(defparameter +fx-1+ 96)
 
-(alexandria:define-constant +rain-fx+ 96)
+(defparameter +rain-fx+ 96)
 
-(alexandria:define-constant +rain+ 96)
+(defparameter +rain+ 96)
 
 (defgmpatch +fx-2-soundtrack+ 97 "FX 2 (Soundtrack)")
 
-(alexandria:define-constant +fx-2+ 97)
+(defparameter +fx-2+ 97)
 
-(alexandria:define-constant +soundtrack-fx+ 97)
+(defparameter +soundtrack-fx+ 97)
 
-(alexandria:define-constant +soundtrack+ 97)
+(defparameter +soundtrack+ 97)
 
 (defgmpatch +fx-3-crystal+ 98 "FX 3 (Crystal)")
 
-(alexandria:define-constant +fx-3+ 98)
+(defparameter +fx-3+ 98)
 
-(alexandria:define-constant +crystal-fx+ 98)
+(defparameter +crystal-fx+ 98)
 
-(alexandria:define-constant +crystal+ 98)
+(defparameter +crystal+ 98)
 
 (defgmpatch +fx-4-atmosphere+ 99 "FX 4 (Atmosphere)")
 
-(alexandria:define-constant +fx-4+ 99)
+(defparameter +fx-4+ 99)
 
-(alexandria:define-constant +atmosphere-fx+ 99)
+(defparameter +atmosphere-fx+ 99)
 
-(alexandria:define-constant +atmosphere+ 99)
+(defparameter +atmosphere+ 99)
 
 (defgmpatch +fx-5-brightness+ 100 "FX 5 (Brightness)")
 
-(alexandria:define-constant +fx-5+ 100)
+(defparameter +fx-5+ 100)
 
-(alexandria:define-constant +brightness-fx+ 100)
+(defparameter +brightness-fx+ 100)
 
-(alexandria:define-constant +brightness+ 100)
+(defparameter +brightness+ 100)
 
 (defgmpatch +fx-6-goblins+ 101 "FX 6 (Goblins)")
 
-(alexandria:define-constant +fx-6+ 101)
+(defparameter +fx-6+ 101)
 
-(alexandria:define-constant +goblins-fx+ 101)
+(defparameter +goblins-fx+ 101)
 
-(alexandria:define-constant +goblins+ 101)
+(defparameter +goblins+ 101)
 
 (defgmpatch +fx-7-echoes+ 102 "FX 7 (Echoes)")
 
-(alexandria:define-constant +fx-7+ 102)
+(defparameter +fx-7+ 102)
 
-(alexandria:define-constant +echoes-fx+ 102)
+(defparameter +echoes-fx+ 102)
 
-(alexandria:define-constant +echoes+ 102)
+(defparameter +echoes+ 102)
 
 (defgmpatch +fx-8-sci-fi+ 103 "FX 8 (Sci-Fi)")
 
-(alexandria:define-constant +fx-8+ 103)
+(defparameter +fx-8+ 103)
 
-(alexandria:define-constant +sci-fi-fx+ 103)
+(defparameter +sci-fi-fx+ 103)
 
-(alexandria:define-constant +sci-fi+ 103)
+(defparameter +sci-fi+ 103)
 
 (defgmpatch +sitar+ 104)
 
@@ -1711,159 +1711,159 @@
 
 (defgmdrum +open-triangle+ 81)
 
-(alexandria:define-constant +sequential-circuits-id+ 1)
+(defparameter +sequential-circuits-id+ 1)
 
-(alexandria:define-constant +idp-id+ 2)
+(defparameter +idp-id+ 2)
 
-(alexandria:define-constant +voyetra-id+ 3)
+(defparameter +voyetra-id+ 3)
 
-(alexandria:define-constant +moog-id+ 4)
+(defparameter +moog-id+ 4)
 
-(alexandria:define-constant +passport-id+ 5)
+(defparameter +passport-id+ 5)
 
-(alexandria:define-constant +lexicon-id+ 6)
+(defparameter +lexicon-id+ 6)
 
-(alexandria:define-constant +kurzweil-id+ 7)
+(defparameter +kurzweil-id+ 7)
 
-(alexandria:define-constant +fender-id+ 8)
+(defparameter +fender-id+ 8)
 
-(alexandria:define-constant +gulbransen-id+ 9)
+(defparameter +gulbransen-id+ 9)
 
-(alexandria:define-constant +akg-id+ 10)
+(defparameter +akg-id+ 10)
 
-(alexandria:define-constant +voyce-id+ 11)
+(defparameter +voyce-id+ 11)
 
-(alexandria:define-constant +waveframe-id+ 12)
+(defparameter +waveframe-id+ 12)
 
-(alexandria:define-constant +ada-id+ 13)
+(defparameter +ada-id+ 13)
 
-(alexandria:define-constant +garfield-id+ 14)
+(defparameter +garfield-id+ 14)
 
-(alexandria:define-constant +ensoniq-id+ 15)
+(defparameter +ensoniq-id+ 15)
 
-(alexandria:define-constant +oberheim-id+ 16)
+(defparameter +oberheim-id+ 16)
 
-(alexandria:define-constant +apple-id+ 17)
+(defparameter +apple-id+ 17)
 
-(alexandria:define-constant +grey-matter-id+ 18)
+(defparameter +grey-matter-id+ 18)
 
-(alexandria:define-constant +digidesign-id+ 19)
+(defparameter +digidesign-id+ 19)
 
-(alexandria:define-constant +palm-tree-id+ 20)
+(defparameter +palm-tree-id+ 20)
 
-(alexandria:define-constant +jl-cooper-id+ 21)
+(defparameter +jl-cooper-id+ 21)
 
-(alexandria:define-constant +lowrey-id+ 22)
+(defparameter +lowrey-id+ 22)
 
-(alexandria:define-constant +adams-smith-id+ 23)
+(defparameter +adams-smith-id+ 23)
 
-(alexandria:define-constant +e-mu-id+ 24)
+(defparameter +e-mu-id+ 24)
 
-(alexandria:define-constant +harmony-id+ 25)
+(defparameter +harmony-id+ 25)
 
-(alexandria:define-constant +art-id+ 26)
+(defparameter +art-id+ 26)
 
-(alexandria:define-constant +baldwin-id+ 27)
+(defparameter +baldwin-id+ 27)
 
-(alexandria:define-constant +eventide-id+ 28)
+(defparameter +eventide-id+ 28)
 
-(alexandria:define-constant +inventronics-id+ 29)
+(defparameter +inventronics-id+ 29)
 
-(alexandria:define-constant +key-concepts-id+ 30)
+(defparameter +key-concepts-id+ 30)
 
-(alexandria:define-constant +clarity-id+ 31)
+(defparameter +clarity-id+ 31)
 
-(alexandria:define-constant +passac-id+ 32)
+(defparameter +passac-id+ 32)
 
-(alexandria:define-constant +siel-id+ 33)
+(defparameter +siel-id+ 33)
 
-(alexandria:define-constant +synthaxe-id+ 34)
+(defparameter +synthaxe-id+ 34)
 
-(alexandria:define-constant +stepp-id+ 35)
+(defparameter +stepp-id+ 35)
 
-(alexandria:define-constant +hohner-id+ 36)
+(defparameter +hohner-id+ 36)
 
-(alexandria:define-constant +twister-id+ 37)
+(defparameter +twister-id+ 37)
 
-(alexandria:define-constant +solton-id+ 38)
+(defparameter +solton-id+ 38)
 
-(alexandria:define-constant +jellinghaus-id+ 39)
+(defparameter +jellinghaus-id+ 39)
 
-(alexandria:define-constant +southworth-id+ 40)
+(defparameter +southworth-id+ 40)
 
-(alexandria:define-constant +ppg-id+ 41)
+(defparameter +ppg-id+ 41)
 
-(alexandria:define-constant +jen-id+ 42)
+(defparameter +jen-id+ 42)
 
-(alexandria:define-constant +solid-state-id+ 43)
+(defparameter +solid-state-id+ 43)
 
-(alexandria:define-constant +audio-vertrieb-id+ 44)
+(defparameter +audio-vertrieb-id+ 44)
 
-(alexandria:define-constant +hinton-id+ 45)
+(defparameter +hinton-id+ 45)
 
-(alexandria:define-constant +soundtracs-id+ 46)
+(defparameter +soundtracs-id+ 46)
 
-(alexandria:define-constant +elka-id+ 47)
+(defparameter +elka-id+ 47)
 
-(alexandria:define-constant +dynachord-id+ 48)
+(defparameter +dynachord-id+ 48)
 
-(alexandria:define-constant +clavia-id+ 51)
+(defparameter +clavia-id+ 51)
 
-(alexandria:define-constant +audio-architecture-id+ 52)
+(defparameter +audio-architecture-id+ 52)
 
-(alexandria:define-constant +soundcraft-id+ 57)
+(defparameter +soundcraft-id+ 57)
 
-(alexandria:define-constant +wersi-id+ 59)
+(defparameter +wersi-id+ 59)
 
-(alexandria:define-constant +avab-id+ 60)
+(defparameter +avab-id+ 60)
 
-(alexandria:define-constant +digigram-id+ 61)
+(defparameter +digigram-id+ 61)
 
-(alexandria:define-constant +waldorf-id+ 62)
+(defparameter +waldorf-id+ 62)
 
-(alexandria:define-constant +quasimidi-id+ 63)
+(defparameter +quasimidi-id+ 63)
 
-(alexandria:define-constant +kawai-id+ 64)
+(defparameter +kawai-id+ 64)
 
-(alexandria:define-constant +roland-id+ 65)
+(defparameter +roland-id+ 65)
 
-(alexandria:define-constant +korg-id+ 66)
+(defparameter +korg-id+ 66)
 
-(alexandria:define-constant +yamaha-id+ 67)
+(defparameter +yamaha-id+ 67)
 
-(alexandria:define-constant +casio-id+ 68)
+(defparameter +casio-id+ 68)
 
-(alexandria:define-constant +moridaira-id+ 69)
+(defparameter +moridaira-id+ 69)
 
-(alexandria:define-constant +kamiya-id+ 70)
+(defparameter +kamiya-id+ 70)
 
-(alexandria:define-constant +akai-id+ 71)
+(defparameter +akai-id+ 71)
 
-(alexandria:define-constant +japan-victor-id+ 72)
+(defparameter +japan-victor-id+ 72)
 
-(alexandria:define-constant +meisosha-id+ 73)
+(defparameter +meisosha-id+ 73)
 
-(alexandria:define-constant +hoshino-gakki-id+ 74)
+(defparameter +hoshino-gakki-id+ 74)
 
-(alexandria:define-constant +fujitsu-id+ 75)
+(defparameter +fujitsu-id+ 75)
 
-(alexandria:define-constant +sony-id+ 76)
+(defparameter +sony-id+ 76)
 
-(alexandria:define-constant +nishin-onpa-id+ 77)
+(defparameter +nishin-onpa-id+ 77)
 
-(alexandria:define-constant +teac-id+ 78)
+(defparameter +teac-id+ 78)
 
-(alexandria:define-constant +matsushita-electric-id+ 80)
+(defparameter +matsushita-electric-id+ 80)
 
-(alexandria:define-constant +fostex-id+ 81)
+(defparameter +fostex-id+ 81)
 
-(alexandria:define-constant +zoom-id+ 82)
+(defparameter +zoom-id+ 82)
 
-(alexandria:define-constant +midori-id+ 83)
+(defparameter +midori-id+ 83)
 
-(alexandria:define-constant +matsushita-communication-id+ 84)
+(defparameter +matsushita-communication-id+ 84)
 
-(alexandria:define-constant +suzuki-id+ 85)
+(defparameter +suzuki-id+ 85)
 
 (defparameter +warner-id+ '(0 0 1))
 
@@ -2019,55 +2019,55 @@
 
 (defparameter +tc-id+ '(0 32 16))
 
-(alexandria:define-constant +non-commercial-id+ 125)
+(defparameter +non-commercial-id+ 125)
 
-(alexandria:define-constant +non-real-time-id+ 126)
+(defparameter +non-real-time-id+ 126)
 
-(alexandria:define-constant +sample-dump-header-sub-id+ 1)
+(defparameter +sample-dump-header-sub-id+ 1)
 
-(alexandria:define-constant +sample-dump-packet-sub-id+ 2)
+(defparameter +sample-dump-packet-sub-id+ 2)
 
-(alexandria:define-constant +dump-request-sub-id+ 3)
+(defparameter +dump-request-sub-id+ 3)
 
-(alexandria:define-constant +midi-time-code-setup-sub-id+ 4)
+(defparameter +midi-time-code-setup-sub-id+ 4)
 
-(alexandria:define-constant +sample-dump-extensions-sub-id+ 5)
+(defparameter +sample-dump-extensions-sub-id+ 5)
 
-(alexandria:define-constant +inquiry-message-sub-id+ 6)
+(defparameter +inquiry-message-sub-id+ 6)
 
-(alexandria:define-constant +file-dump-sub-id+ 7)
+(defparameter +file-dump-sub-id+ 7)
 
-(alexandria:define-constant +midi-tuning-standard-sub-id+ 8)
+(defparameter +midi-tuning-standard-sub-id+ 8)
 
-(alexandria:define-constant +general-midi-message-sub-id+ 9)
+(defparameter +general-midi-message-sub-id+ 9)
 
-(alexandria:define-constant +end-of-file-sub-id+ 123)
+(defparameter +end-of-file-sub-id+ 123)
 
-(alexandria:define-constant +wait-sub-id+ 124)
+(defparameter +wait-sub-id+ 124)
 
-(alexandria:define-constant +cancel-sub-id+ 125)
+(defparameter +cancel-sub-id+ 125)
 
-(alexandria:define-constant +nak-sub-id+ 126)
+(defparameter +nak-sub-id+ 126)
 
-(alexandria:define-constant +ack-sub-id+ 127)
+(defparameter +ack-sub-id+ 127)
 
-(alexandria:define-constant +real-time-id+ 127)
+(defparameter +real-time-id+ 127)
 
-(alexandria:define-constant +long-form-mtc-sub-id+ 1)
+(defparameter +long-form-mtc-sub-id+ 1)
 
-(alexandria:define-constant +midi-show-control-sub-id+ 2)
+(defparameter +midi-show-control-sub-id+ 2)
 
-(alexandria:define-constant +notation-information-sub-id+ 3)
+(defparameter +notation-information-sub-id+ 3)
 
-(alexandria:define-constant +device-control-sub-id+ 4)
+(defparameter +device-control-sub-id+ 4)
 
-(alexandria:define-constant +real-time-mtc-cueing-sub-id+ 5)
+(defparameter +real-time-mtc-cueing-sub-id+ 5)
 
-(alexandria:define-constant +midi-machine-control-command-sub-id+ 6)
+(defparameter +midi-machine-control-command-sub-id+ 6)
 
-(alexandria:define-constant +midi-machine-control-response-sub-id+ 7)
+(defparameter +midi-machine-control-response-sub-id+ 7)
 
-(alexandria:define-constant +single-note-retune-sub-id+ 8)
+(defparameter +single-note-retune-sub-id+ 8)
 
 (defun n-bit-twoscomp-p (num bits signed? &rest args)
   (let ((error? (if (null args) nil (car args))))
@@ -2122,14 +2122,14 @@
       (loop for d in data do (nblize d))
       (nreverse res))))
 
-(alexandria:define-constant +all-device-ids+ 127)
+(defparameter +all-device-ids+ 127)
 
 (defun make-gm-mode-sysex-data
        (gm-on? &key (device-id +all-device-ids+))
   (make-sysex-data +non-real-time-id+ device-id
    +general-midi-message-sub-id+ (if gm-on? 1 0)))
 
-(alexandria:define-constant +master-volume-sub-id-2+ 1)
+(defparameter +master-volume-sub-id-2+ 1)
 
 (defun make-master-volume-sysex-data
        (&key coarse fine (device-id +all-device-ids+))
@@ -2144,17 +2144,17 @@
    +master-volume-sub-id-2+ (if fine (logand fine 127) coarse)
    (if fine (ash (logand fine 16256) -7) coarse)))
 
-(alexandria:define-constant +smpte-full-frame-sub-id-2+ 1)
+(defparameter +smpte-full-frame-sub-id-2+ 1)
 
-(alexandria:define-constant +smpte-user-bits-sub-id-2+ 2)
+(defparameter +smpte-user-bits-sub-id-2+ 2)
 
-(alexandria:define-constant +smpte-format-24fps+ 0)
+(defparameter +smpte-format-24fps+ 0)
 
-(alexandria:define-constant +smpte-format-25fps+ 1)
+(defparameter +smpte-format-25fps+ 1)
 
-(alexandria:define-constant +smpte-format-30fps-drop+ 2)
+(defparameter +smpte-format-30fps-drop+ 2)
 
-(alexandria:define-constant +smpte-format-30fps+ 3)
+(defparameter +smpte-format-30fps+ 3)
 
 (defun encode-smpte-data (hr mn sc fr &key subframes format)
   (unless
@@ -2182,9 +2182,9 @@
    +smpte-full-frame-sub-id-2+
    (encode-smpte-data hr mn sc fr :format format)))
 
-(alexandria:define-constant +smpte-user-bits-raw+ 0)
+(defparameter +smpte-user-bits-raw+ 0)
 
-(alexandria:define-constant +smpte-user-bits-chars+ 2)
+(defparameter +smpte-user-bits-chars+ 2)
 
 (defun make-smpte-user-bits-sysex-data
        (format data &key (device-id +all-device-ids+))
@@ -2235,7 +2235,7 @@
        (if (= fmt 2) +smpte-user-bits-chars+
            +smpte-user-bits-raw+)))))
 
-(alexandria:define-constant +bar-marker-sub-id-2+ 1)
+(defparameter +bar-marker-sub-id-2+ 1)
 
 (defun make-measure-number-sysex-data
        (num &key (countoff nil) (device-id +all-device-ids+))
@@ -2245,9 +2245,9 @@
    +notation-information-sub-id+ +bar-marker-sub-id-2+
    (ldb (byte 7 0) num) (ldb (byte 7 7) num)))
 
-(alexandria:define-constant +time-signature-now-sub-id-2+ 2)
+(defparameter +time-signature-now-sub-id-2+ 2)
 
-(alexandria:define-constant +time-signature-next-measure-sub-id-2+ 66)
+(defparameter +time-signature-next-measure-sub-id-2+ 66)
 
 (defun make-time-signature-sysex-data
        (numerators denominators
@@ -2271,35 +2271,35 @@
      (+ (* 2 len) 1) (first args) (second args) 32nds
      (cdr (cdr args)))))
 
-(alexandria:define-constant +setup-special-sub-id-2+ 0)
+(defparameter +setup-special-sub-id-2+ 0)
 
-(alexandria:define-constant +setup-punch-in-point-sub-id-2+ 1)
+(defparameter +setup-punch-in-point-sub-id-2+ 1)
 
-(alexandria:define-constant +setup-punch-out-point-sub-id-2+ 2)
+(defparameter +setup-punch-out-point-sub-id-2+ 2)
 
-(alexandria:define-constant +setup-delete-punch-in-point-sub-id-2+ 3)
+(defparameter +setup-delete-punch-in-point-sub-id-2+ 3)
 
-(alexandria:define-constant +setup-delete-punch-out-point-sub-id-2+ 4)
+(defparameter +setup-delete-punch-out-point-sub-id-2+ 4)
 
-(alexandria:define-constant +setup-event-start-point-sub-id-2+ 5)
+(defparameter +setup-event-start-point-sub-id-2+ 5)
 
-(alexandria:define-constant +setup-event-stop-point-sub-id-2+ 6)
+(defparameter +setup-event-stop-point-sub-id-2+ 6)
 
-(alexandria:define-constant +setup-xtnd-event-start-point-sub-id-2+ 7)
+(defparameter +setup-xtnd-event-start-point-sub-id-2+ 7)
 
-(alexandria:define-constant +setup-xtnd-event-stop-point-sub-id-2+ 8)
+(defparameter +setup-xtnd-event-stop-point-sub-id-2+ 8)
 
-(alexandria:define-constant +setup-delete-event-start-point-sub-id-2+ 9)
+(defparameter +setup-delete-event-start-point-sub-id-2+ 9)
 
-(alexandria:define-constant +setup-delete-event-stop-point-sub-id-2+ 10)
+(defparameter +setup-delete-event-stop-point-sub-id-2+ 10)
 
-(alexandria:define-constant +setup-cue-point-sub-id-2+ 11)
+(defparameter +setup-cue-point-sub-id-2+ 11)
 
-(alexandria:define-constant +setup-xtnd-cue-point-sub-id-2+ 12)
+(defparameter +setup-xtnd-cue-point-sub-id-2+ 12)
 
-(alexandria:define-constant +setup-delete-cue-point-sub-id-2+ 13)
+(defparameter +setup-delete-cue-point-sub-id-2+ 13)
 
-(alexandria:define-constant +setup-event-name-sub-id-2+ 14)
+(defparameter +setup-event-name-sub-id-2+ 14)
 
 (defun %make-setup-data
        (dev subid2 fmt hr mn sc fr ff num &optional xtnd)

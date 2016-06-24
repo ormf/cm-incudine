@@ -1,18 +1,21 @@
 (in-package :cm)
 
 (defparameter *incudine-default-input* nil)
-
 (defparameter *incudine-default-output* nil)
-
 (defparameter *incudine-default-latency* 5)
-
 (defparameter *incudine-default-inbuf-size* 512)
-
 (defparameter *incudine-default-outbuf-size* 2048)
-
 (defparameter *incudine-default-filter* 0)
-
 (defparameter *incudine-default-mask* 0)
+
+(defvar *midi-in* nil)
+(defvar *midi-out* nil)
+(defvar *osc-in* nil)
+(defvar *osc-out* nil)
+(defvar *fudi-in* nil)
+(defvar *fudi-out* nil)
+
+(declaim (special *osc-out*))
 
 
 (progn
@@ -110,10 +113,11 @@
   (unless (zerop (length jackmidi::*output-streams*))
     (elt jackmidi::*output-streams* 0)))
 
-(declaim (special *oscout*))
-
 (defun osc-output-stream ()
-  *oscout*)
+  *osc-out*)
+
+(defun fudi-output-stream ()
+  *fudi-out*)
 
 (declaim (inline midi-out))
 (defun midi-out (stream status data1 data2 data-size)
@@ -301,11 +305,18 @@ out."
            (midi-event-data1 obj) (midi-event-data2 obj) 3))))))
 ;; (midi-write-message (midi-event->midi-message obj) str scoretime nil)
 
-(defmethod write-event
-           ((obj integer) (str incudine-stream) scoretime)
-  (declare (ignore obj str scoretime))
-  ;; (midi-write-message obj str scoretime nil)
-  )
+(defmethod write-event ((obj integer) (str incudine-stream) scoretime)
+  (alexandria:if-let (stream (jackmidi-output-stream))
+    (incudine.edf:at (+ (incudine:now)
+                        (* incudine.util:*sample-rate* scoretime))
+                     (midi-out
+                      stream
+                      (logior
+                       (ash (channel-message-opcode obj) 4)
+                       (channel-message-channel obj))
+                      (channel-message-data1 obj)
+                      (channel-message-data2 obj)
+                      3))))
 
 (defmethod write-event ((obj osc) (str incudine-stream) scoretime)
   (alexandria:if-let (stream (osc-output-stream))
@@ -316,6 +327,96 @@ out."
                               (let ((msg (osc-msg obj)))
                                 (if (consp msg) msg (list msg)))))))
   (values))
+
+
+(defmethod write-event ((obj fudi) (str incudine-stream) scoretime)
+  (alexandria:if-let (stream (fudi-output-stream))
+;;    (format t "~a~%" scoretime)
+    (incudine:at (+ (incudine:now) (* incudine::*sample-rate* scoretime))
+                 (lambda () (funcall #'send-fudi
+                                (let ((msg (fudi-msg obj)))
+                                  (if (consp msg) msg (list msg)))))))
+  (values))
+
+;;; dummy method to make set-receiver! happy
+(defmethod rt-stream-receive-type ((stream jackmidi:input-stream))
+  nil)
+
+;;; dummy method to make set-receiver! happy
+(define-setf-expander rt-stream-receive-type (stream)
+  (declare (ignore stream))
+  nil)
+
+;;; dummy method to make set-receiver! happy
+(defmethod object-name ((stream jackmidi:input-stream))
+  stream)
+
+;;; we need to store the responder for an input stream type globally for
+;;; stream-receive-deinit
+(defvar *stream-recv-responders* (make-hash-table))
+
+(defmethod rt-stream-receive-data ((stream jackmidi:input-stream))
+  (declare (ignore stream))
+  nil)
+
+(alexandria:define-constant +ml-opcode-mask+ #b11110000)
+(alexandria:define-constant +ml-channel-mask+ #b1111)
+
+(defmethod stream-receive-init ((stream jackmidi:input-stream) hook args)
+  (if (gethash stream *stream-recv-responders*)
+      (progn
+        (incudine:remove-responder (gethash stream *stream-recv-responders*))
+        (remhash stream *stream-recv-responders*)))
+  (let* ((mask (getf args :mask #xffffffff))
+         (responder (incudine:make-responder
+                     stream
+                     (lambda (st d1 d2)
+                       (if (/= 0 (logand (ash 1 (+ 16 (ash st -4))) mask)) ;;; emulate portmidi input filtering
+                           (let* ((opcode (ash (logand st +ml-opcode-mask+) -4))
+                                  (channel (logand st +ml-channel-mask+))
+                                  (mm (make-channel-message opcode channel d1 d2))
+                                  (ms (* 1000 (/ (incudine:now) incudine::*sample-rate*))))
+                             (funcall hook mm ms)))))))
+    (if responder
+        (setf (gethash stream *stream-recv-responders*) responder)
+        (error "~a: Couldn't add responder!" stream)))
+  (values))
+
+(defmethod stream-receive-start ((stream jackmidi:input-stream) args)
+  args
+  (if (incudine::receiver-status
+           (incudine::receiver *midi-in*))
+      T
+      (incudine:recv-start stream)))
+
+(defmethod stream-receive-stop ((stream jackmidi:input-stream))
+    (incudine:recv-stop stream)
+  (values))
+
+(defmethod stream-receive-deinit ((stream jackmidi:input-stream))
+  (if (incudine:remove-responder (gethash stream *stream-recv-responders*))
+      (error "~a: Couldn't remove responder!" stream)
+      (remhash stream *stream-recv-responders*)))
+
+
+(defun set-receiver! (hook stream &rest args)
+  (let ((data (rt-stream-receive-data stream)))
+    (if (and (not (null data)) (first data))
+        (error "set-receiver!: ~s already receiving." stream)
+        (let ((type (getf args ':receive-type)))
+          (if type (setf (rt-stream-receive-type stream) type)
+              (if (not (rt-stream-receive-type stream))
+                  (setf (rt-stream-receive-type stream)
+                          *receive-type*)))
+          (stream-receive-init stream hook args)
+          (cond
+           ((stream-receive-start stream args)
+            (format t "~%; ~a receiving!" (object-name stream)))
+           (t (stream-receive-deinit stream)
+            (error
+             "set-receiver!: ~s does not support :receive-type ~s."
+             stream (rt-stream-receive-type stream))))
+          (values)))))
 
 #|
 
@@ -377,3 +478,24 @@ out."
            (list 'incudine:output #'parse-pm-output 'task 'to 'at
                  'raw))))
 |#
+
+(defun rtserr (fn args)
+  (error "Attempt to call ~s without RTS loaded." (cons fn args)))
+
+(defvar *rts-running* nil)
+
+(defun rts (&rest args) args (setf *rts-running* t))
+
+(defun rts? (&rest args) args *rts-running*)
+
+(defun rts-stop (&rest args) args (setf *rts-running* nil))
+
+(defun rts-pause (&rest args) (rtserr 'rts-pause args))
+
+(defun rts-continue (&rest args) (rtserr 'rts-continue args))
+
+(defun rts-enqueue (&rest args) args)
+
+(defun rts-now (&rest args) (rtserr 'rts-now args))
+
+(defun rts-thread? () nil)

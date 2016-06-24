@@ -304,6 +304,7 @@
     (values)))
 
 (defun now (&optional abs-time)
+;;  (format t "scheduling-mode: ~a, abs-time: ~a, *qtime*: ~a, *pstart*: ~a~%" (scheduling-mode) abs-time *qtime* *pstart*)
   (case (scheduling-mode)
     ((:events) (if abs-time *qtime* (- *qtime* *pstart*)))
     ((:rts) (if abs-time *rts-qtime* (- *rts-qtime* *rts-pstart*)))
@@ -316,7 +317,6 @@
     (t (error "wait: scheduler not running."))))
 
 (defun sprout (obj &key to at)
-  to
   (if (consp obj) (dolist (o obj) (sprout o :at at :to to))
       (let ((sched (scheduling-mode)))
         (if (not sched) (if (not at) (setf at (now)))
@@ -325,11 +325,11 @@
                     (setf at (+ at *rts-pstart*)))
                 (setf at (now))))
         (cond
-         ((functionp obj) (enqueue *qentry-process* obj at at sched))
-         ((integerp obj) (enqueue *qentry-message* obj at nil sched))
-         ((typep obj <object>)
-          (schedule-object obj (or *pstart* at) sched))
-         (t (enqueue *qentry-unknown* obj at nil sched)))))
+          ((functionp obj) (enqueue *qentry-process* obj at at sched))
+          ((integerp obj) (enqueue *qentry-message* obj at nil sched))
+          ((typep obj <object>)
+           (schedule-object obj (or *pstart* at) sched))
+          (t (enqueue *qentry-unknown* obj at nil sched)))))
   (values))
 
 (defun sec (val fmat)

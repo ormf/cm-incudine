@@ -45,7 +45,7 @@
     :version "2.12.0"
     :author "Rick Taube <taube (at) uiuc.edu>"
     :licence "LLGPL"
-    :depends-on (:incudine)
+    :depends-on (:incudine :fudi)
     :components
     ((:module "src"
       :serial t
@@ -83,6 +83,7 @@
                    (:file "sc")
                    (:file "parse")
                    (:file "osc")
+                   (:file "fudi")
                    (:file "rt")
                    (:file "incudine-rts")))))
 
