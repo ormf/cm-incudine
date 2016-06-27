@@ -25,12 +25,41 @@
 (defmethod recv? ((io portmidi-stream)) (error *pm-not-loaded-error*))
 |#
 
+(defparameter *time-format* :sec)
+
+(defun set-time-format (fmt)
+  (if (member fmt '(:sec :sample :ms))
+      (setf *time-format* fmt)
+      (error "time-format ~a not supported, must be :sec :sample or :ms!" fmt)))
+
+(defun rts-now ()
+  (case *time-format*
+    ((:sec) (/ (incudine:now) incudine::*sample-rate*))
+    ((:sample) (incudine:now))
+    ((:ms) (/ (incudine:now) incudine::*sample-rate* 0.001))))
+
+(defun rts? (&optional arg)
+  (apply #'rts:scheduler-state? arg))
+
+(defun rts (&rest args)
+  (declare (ignore args))
+  (incudine:rt-start)
+  (values))
+
+(defun rts? (&optional arg)
+  (declare (ignore arg))
+  (eq :started (incudine:rt-status)))
+
+
+(defparameter *rts-thread* nil)
+
+(defun rts-thread? ()
+  *rts-thread*)
+
+;;   (if incudine::*rt-thread* T)
+
 (defun rtserr (fn args)
   (error "Attempt to call ~s without RTS loaded." (cons fn args)))
-
-(defun rts (&rest args) (rtserr 'rts args))
-
-(defun rts? (&rest args) args nil)
 
 (defun rts-stop (&rest args) (rtserr 'rts-stop args))
 
@@ -38,8 +67,9 @@
 
 (defun rts-continue (&rest args) (rtserr 'rts-continue args))
 
-(defun rts-enqueue (&rest args) (rtserr 'rts-enqueue args))
+;;; (defun rts-enqueue (&rest args) (rtserr 'rts-enqueue args))
 
-(defun rts-now (&rest args) (rtserr 'rts-now args))
+(defun rts-enqueue (&rest args)
+  (break "rts-enqueue: ~a" args))
 
-(defun rts-thread? () nil)
+

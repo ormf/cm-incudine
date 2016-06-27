@@ -163,6 +163,8 @@
          (qtime nil))
     (setf *queue* %q)
     (setf *events* t)
+    (setf *qtime* 0)
+    (setf *pstart* 0)
     (if (consp object)
         (dolist (o object)
           (schedule-object o
@@ -224,6 +226,20 @@
 (defmethod schedule-object ((obj cons) start sched)
            (dolist (o obj) (schedule-object o start sched)))
 
+;;; A seq is an object with name, subobjects and time slots. The
+;;; subobjects are a list of objects. schedule-object does 2 things:
+;;;
+;;; 1. It enqueues the seq by calling enqueue with the object consed
+;;; to the subobject list. The enqueue function works by iterating
+;;; recursively over the cdr of the list (the subobjects), splicing
+;;; out each event (the second element of this list) and calling its
+;;; write-event function. Container objects are skipped over in the
+;;; iteration.
+;;;
+;;; 2. It then enqueues all container objects of the subobjects (the
+;;; "subcontainers") by calling itself with updated start-time.
+
+
 (defmethod schedule-object ((obj seq) start sched)
            (let ((mystart (+ start (object-time obj))))
              (enqueue *qentry-seq*
@@ -234,9 +250,20 @@
 
 (defmethod unschedule-object (obj &rest recurse) obj recurse nil)
 
+;;; The seq (entry) is represented as a list, with the seq-object as
+;;; first element and the subobjects as the rest. It works by splicing
+;;; out the head of the cdr, scheduling it with write-event and then
+;;; calling enqueue with the modified entry. Container objects in the
+;;; cdr of the entry list are skipped.
+;;;
+;;; Note: scheduler-do-seq only outputs one event (if a non-seq event
+;;; exists in the cdr of entry) and then calls enqueue with the
+;;; reduced list (which in turn calls scheduler-do-seq again).)
+
 (defun scheduler-do-seq (entry time start stream type sched)
   time
   (let ((head (cdr entry)) (event nil) (next nil))
+    (break "scheduler-do-seq! entry: ~a" entry)
     (do ()
         ((or event (null head)) nil)
       (setf next (pop head))
@@ -253,8 +280,15 @@
               start sched)))
         nil)))
 
+;;; a process is a function which runs and eventually outputs
+;;; events. scheduler-do-process calls this function and reschedules
+;;; it in case it doesn't return nil. A process is implemented as a
+;;; BLOCK statement which returns T and returns nil using :RETURN_FROM
+;;; in case a final condition is met.
+
 (defun scheduler-do-process (func qtime pstart stream type sched)
   stream
+;;;  (format *debug-io* "~&scheduler-do-process, scheduling-mode: ~a qtime: ~a, pstart: ~a~%" (scheduling-mode) qtime pstart)
   (case sched
     ((:events)
      (setf *pstart* pstart)
@@ -297,14 +331,15 @@
                  (write-event event to (+ n ahead))))))
       ((:rts)
        (unless to (setf to *rts-out*))
-       (write-event event to (+ (or at *rts-qtime* 0) ahead)))
+       (progn
+         (write-event event to (samps->secs (+ (or at 0) ahead)))))
       (t
        (unless to (setf to *rts-out*))
-       (write-event event to (+ (or at 0) ahead))))
+       (write-event event to (samps->secs (+ (or at 0) ahead)))))
     (values)))
 
 (defun now (&optional abs-time)
-;;  (format t "scheduling-mode: ~a, abs-time: ~a, *qtime*: ~a, *pstart*: ~a~%" (scheduling-mode) abs-time *qtime* *pstart*)
+;;;  (format t "now, scheduling-mode: ~a, abs-time: ~a, *qtime*: ~a, *pstart*: ~a~%" (scheduling-mode) abs-time *qtime* *pstart*)
   (case (scheduling-mode)
     ((:events) (if abs-time *qtime* (- *qtime* *pstart*)))
     ((:rts) (if abs-time *rts-qtime* (- *rts-qtime* *rts-pstart*)))
@@ -319,11 +354,13 @@
 (defun sprout (obj &key to at)
   (if (consp obj) (dolist (o obj) (sprout o :at at :to to))
       (let ((sched (scheduling-mode)))
-        (if (not sched) (if (not at) (setf at (now)))
+        (if (not sched) ;;; called from repl
+            (if (not at) (setf at (now)))
             (if at
                 (if (eq sched ':events) (setf at (+ at *pstart*))
                     (setf at (+ at *rts-pstart*)))
                 (setf at (now))))
+;;;        (format t "sprout, now: ~a, at: ~a, *pstart*: ~a" (now) at *pstart*)
         (cond
           ((functionp obj) (enqueue *qentry-process* obj at at sched))
           ((integerp obj) (enqueue *qentry-message* obj at nil sched))

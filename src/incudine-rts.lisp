@@ -14,9 +14,9 @@
 (defvar *osc-out* nil)
 (defvar *fudi-in* nil)
 (defvar *fudi-out* nil)
+(defparameter *rtsdebug* nil)
 
 (declaim (special *osc-out*))
-
 
 (progn
  (defclass incudine-stream (rt-stream midi-stream-mixin)
@@ -102,6 +102,60 @@
       port)
   port)
 
+(defun midi-close-default (&rest args)
+  (if (or (member :inout args)
+          (member :input args)
+          (not args))
+      (if *midi-in*
+          (progn
+            (jackmidi:close *midi-in*)
+            (setf *midi-in* nil))))
+  (if (or (member :inout args)
+          (member :output args)
+          (not args))
+      (if *midi-out*
+          (progn
+            (jackmidi:close *midi-out*)
+            (setf *midi-out* nil)))))
+
+
+(defun midi-open-default (&key (direction :input))
+  (case direction
+    (:output
+     (progn
+       (midi-close-default :output)
+       (setf *midi-out* (jackmidi:open :direction :output))))
+    (t (progn
+         (midi-close-default :input)
+         (setf *midi-in* (jackmidi:open :direction :input))))))
+
+(defun samps->time (samps)
+  (case *time-format*
+    ((:sec) (/ samps incudine::*sample-rate*))
+    ((:sample) samps)
+    ((:ms) (/ samps incudine::*sample-rate* 0.001))))
+
+(defun time->samps (time)
+  (case *time-format*
+    ((:sec) (* time incudine::*sample-rate*))
+    ((:sample) time)
+    ((:ms) (* time incudine::*sample-rate* 0.001))))
+
+(defun time->ms (time)
+  (case *time-format*
+    ((:sec) (/ time 0.001))
+    ((:sample) (/ time incudine::*sample-rate* 0.001))
+    ((:ms) time)))
+
+(defun secs->samps (secs)
+  (* secs incudine::*sample-rate*))
+
+(defun samps->secs (samps)
+  (/ samps incudine::*sample-rate*))
+
+(defun at (time function &rest args)
+  (apply #'incudine:at (time->samps time) function args))
+
 (defun amp->velo (amp)
   (round (* 127 (min 1 (max 0 amp)))))
 
@@ -164,8 +218,8 @@ out."
 
 (declaim (inline midi-note))
 (defun midi-note (stream time pitch dur velo chan)
-  (incudine:at time (note-on stream pitch velo chan))
-  (incudine:at (+ time (* incudine::*sample-rate* dur)) (note-off stream pitch 0 chan)))
+  (at time (note-on stream pitch velo chan))
+  (at (+ time (* incudine::*sample-rate* dur)) (note-off stream pitch 0 chan)))
 
 (defun pm-message->midi-message (pmm)
   (declare (ignore pmm))
@@ -248,7 +302,7 @@ out."
                            (bend (truncate-float
                                   (rescale rem (- width) width 0 16383) t)))
                       (declare (type (signed-byte 16) width bend))
-                      (incudine:at time
+                      (at time
                         (midi-out stream
                           (logior #.(ash +ml-pitch-bend-opcode+ 4) chan)
                           (ldb (byte 7 0) bend) (ldb (byte 7 7) bend) 3))))
@@ -281,11 +335,11 @@ out."
     (multiple-value-bind (keyn ampl)
         (incudine-ensure-velocity (midi-keynum obj) (midi-amplitude obj))
       (declare (type (integer 0 127) ampl))
-      (let ((time (+ (incudine:now) (* incudine.util:*sample-rate* scoretime))))
+      (let ((time (+ (now) scoretime)))
         (multiple-value-bind (keyn chan)
             (incudine-ensure-microtuning keyn (midi-channel obj) stream str
                                          ;; pitch bend one sample before the note
-                                         (1- time))
+                                         (- time 1.0d0))
           (declare (type (signed-byte 8) keyn chan))
           (unless (< keyn 0)
             (midi-note stream time keyn
@@ -298,8 +352,7 @@ out."
   (alexandria:if-let (stream (jackmidi-output-stream))
     (typecase obj
       (midi-channel-event
-       (incudine.edf:at (+ (incudine:now)
-                           (* incudine.util:*sample-rate* scoretime))
+       (at (+ (rts-now) scoretime)
          (midi-out stream
            (logior (ash (midi-event-opcode obj) 4) (midi-event-channel obj))
            (midi-event-data1 obj) (midi-event-data2 obj) 3))))))
@@ -307,8 +360,7 @@ out."
 
 (defmethod write-event ((obj integer) (str incudine-stream) scoretime)
   (alexandria:if-let (stream (jackmidi-output-stream))
-    (incudine.edf:at (+ (incudine:now)
-                        (* incudine.util:*sample-rate* scoretime))
+    (at (+ (rts-now) scoretime)
                      (midi-out
                       stream
                       (logior
@@ -320,9 +372,9 @@ out."
 
 (defmethod write-event ((obj osc) (str incudine-stream) scoretime)
   (alexandria:if-let (stream (osc-output-stream))
-;;    (format t "~a~%" scoretime)
-    (incudine:at (+ (incudine:now) (* incudine::*sample-rate* scoretime))
-                 (lambda () (apply #'send-osc stream (osc-path obj)
+;;    (format t "scoretime: ~a~%" scoretime)
+    (at (+ (rts-now) scoretime)
+                 (lambda () (apply #'osc::send-osc stream (osc-path obj)
                               (osc-types obj)
                               (let ((msg (osc-msg obj)))
                                 (if (consp msg) msg (list msg)))))))
@@ -330,12 +382,12 @@ out."
 
 
 (defmethod write-event ((obj fudi) (str incudine-stream) scoretime)
-  (alexandria:if-let (stream (fudi-output-stream))
-;;    (format t "~a~%" scoretime)
-    (incudine:at (+ (incudine:now) (* incudine::*sample-rate* scoretime))
+  (alexandria:if-let (stream (fudi-stream obj))
+    (at (+ (rts-now) scoretime)
                  (lambda () (funcall #'send-fudi
                                 (let ((msg (fudi-msg obj)))
-                                  (if (consp msg) msg (list msg)))))))
+                                  (if (consp msg) msg (list msg)))
+                                :stream stream))))
   (values))
 
 ;;; dummy method to make set-receiver! happy
@@ -375,7 +427,7 @@ out."
                            (let* ((opcode (ash (logand st +ml-opcode-mask+) -4))
                                   (channel (logand st +ml-channel-mask+))
                                   (mm (make-channel-message opcode channel d1 d2))
-                                  (ms (* 1000 (/ (incudine:now) incudine::*sample-rate*))))
+                                  (ms (time->ms (now))))
                              (funcall hook mm ms)))))))
     (if responder
         (setf (gethash stream *stream-recv-responders*) responder)
@@ -417,6 +469,54 @@ out."
              "set-receiver!: ~s does not support :receive-type ~s."
              stream (rt-stream-receive-type stream))))
           (values)))))
+
+(defun rts-enqueue (handle object time start sched)
+  ;; time is either in sec msec or usec
+  ;; sched is either :rts or nil, nil means from repl
+  ;; add check for sprout without rts running.
+  (let ((repl? (not (eql sched ':rts)))
+	(data 0)
+	(flag 0))
+    (cond ((= (logand handle #xF) *qentry-message*)
+	   ;; integer midi messages can be inserted directly into the
+	   ;; scheduler as data. could do C pointers this way too.
+	   (setq data object))
+	  ((= 0 (logandc2 handle #xF)) ; handle is less than 10000 (unsigned)
+           ;; new entry, add to table
+	   ;; if its a seq or a process we also have to cache the
+	   ;; start time of the object: (<object> . start)
+	   ;; start time is in *time-format* units 
+           (cond ((= handle *qentry-process*)
+;;;                    (format t "~2&rts-enqueue: time: ~10,0f, start: ~10,0f~%" time start)
+                  (at time
+                      (lambda ()
+                        (let ((*rts-thread* t))
+                          (scheduler-do-process object
+                                                time
+                                                start
+                                                *rts-out*
+                                                handle
+                                                ':rts)))))
+                 ((= handle *qentry-seq*)
+                  (at time
+                      (lambda ()
+                        (let ((*rts-thread* t))
+                          (scheduler-do-seq object
+                                            time
+                                            start
+                                            *rts-out*
+                                            handle
+                                            ':rts)))))
+                 ((= handle *qentry-object*)
+                  (at time
+                      (lambda () (output object :to *rts-out*)))))))
+
+    (unless (eql flag 0)
+      (case flag
+        ((1) (error "enqueue: no room in scheduler for ~S." object))
+        ((2) (error "enqueue: RTS not running."))))
+    (values)))
+
 
 #|
 
@@ -479,8 +579,175 @@ out."
                  'raw))))
 |#
 
+#|
+(defmacro rtsdebug (&rest args)
+  `(if *rtsdebug* (format ,@args)))
+
+
+(defun rts-enqueue (handle object time start sched)
+  ;; time is either in sec msec or usec
+  ;; sched is either :rts or nil, nil means from repl
+  ;; add check for sprout without rts running.
+  (let ((repl? (not (eql sched ':rts)))
+	(data 0)
+	(flag 0))
+    (cond ((= (logand handle #xF) *qentry-message*)
+	   ;; integer midi messages can be inserted directly into the
+	   ;; scheduler as data. could do C pointers this way too.
+	   (setq data object))
+	  ((= 0 (logandc2 handle #xF))  ; handle is less than 10000 (unsigned)
+           ;; new entry, add to table
+	   ;; if its a seq or a process we also have to cache the
+	   ;; start time of the object: (<object> . start)
+	   ;; start time is in *time-format* units 
+	   (when (or (= handle *qentry-seq*)
+		     (= handle *qentry-process*))
+	     (setq object (cons object start)))
+	   ;; handle only has type information, make full handle
+	   (setq handle (%newhandle handle))
+	   ;; lock scheduler out during table set if in repl
+	   (if repl? (rts:scheduler-lock-lisp))
+	   ;; add new entry to table
+	   (setf (gethash handle *qentries*) object)
+	   ;; unlock table
+	   (if repl? (rts:scheduler-unlock-lisp))
+	   )
+	  )
+    (rtsdebug t "~%enqueing: data=~d type=~d time=~d repl=~d"
+	      data handle time (if repl? 1 0))
+    ;; convert to msec
+    (setq flag (rts:scheduler-enqueue data ;;; = 0 if no *qentry-message*
+				      handle ;;; hash-key + type in lower nibble
+				      ;; convert seconds to usec for C
+				      (if (eq rts:*time-format* ':sec)
+					  (floor (* time 1000000))
+					  time)
+				      (if repl? 1 0)))
+    (unless (eql flag 0)
+      (case flag
+        ((1) (error "enqueue: no room in scheduler for ~S." object))
+        ((2) (error "enqueue: RTS not running."))))
+    (values)))
+
 (defun rtserr (fn args)
   (error "Attempt to call ~s without RTS loaded." (cons fn args)))
+
+(defun cm-hook (data handle time)
+  ;; C SIDE HAS LOCKED LISP DURING EXTENT OF CALLBACK
+  (let ((entry nil)
+        (etype (%handle-type handle))) ; get entry type from low nibble
+    ;; C time is usec or msec, convert to SEC if necessary
+    (when (eq? rts:*time-format* ':sec)
+      (setq time (/ time 1000000.0)))
+    (setq entry (if (= etype *qentry-message*)
+		    data
+		    (or (gethash handle *qentries*)
+			(error "No RTS entry for handle ~D."
+			       handle))))   
+    (cond ((= etype *qentry-process*)
+           ;; entry is (<process> . <start>)
+	   (rtsdebug t "~&process=~s, start=~s time=~s~%"
+		     (car entry) (cdr entry) time)
+           (destructuring-bind (process . start) entry
+             (scheduler-do-process process
+                                   time
+                                   start
+                                   *rts-out*
+                                   handle
+                                   ':rts)))
+          ((= etype *qentry-seq*)
+	   ;; entry is ( (<seq> . <subobjects>) . <start>)
+	   (rtsdebug t "~&seq=~s, start=~d time=~d~%" 
+		     (caar entry) (cdr entry) time)
+           (destructuring-bind (seq . start) entry
+             (scheduler-do-seq seq
+                               time
+                               start
+                               *rts-out*
+                               handle
+                               ':rts)))
+          (t
+	   (rtsdebug t "~&object=~s time=~s~%" entry time)
+           (write-event entry *rts-out* time)))
+    (values)))
+
+;;;
+;;; user level functions
+;;; 
+
+
+
+(defun rts (&rest args)
+  (unless (rts:scheduler-state? ':stopped)
+    (error "rts: scheduler is already running or paused."))
+  (unless (or (null? args) (keywordp (car args)))
+    (setq *rts-out* (pop args)))
+  (unless (null? *rts-out*)  ;; initalize must be called for microtuning
+    (initialize-io *rts-out*))
+  (apply #'rts:scheduler-start args)
+  (format t "~&; RTS running~%")
+  (values))
+
+(defun rts? (&optional arg)
+  (apply #'rts:scheduler-state? arg))
+
+(defun rts-pause () 
+  (rts:scheduler-pause)
+  (values))
+
+(defun rts-continue ()
+  (rts:scheduler-continue)
+  (values))
+(defun rts-flush ()
+  (rts:scheduler-flush)
+  (values))
+
+(defun rts-hush ()
+  (rts-flush)
+  (when *rts-out*
+    (do ((i 0 (+ i 1)))
+	((>= i 16))
+      (write-event (make <midi-control-change> :time 0
+			 :controller 64 :value 0 :channel i)
+		   *rts-out* 0)
+      (write-event (make <midi-control-change> :time 0
+			 :controller 123 :value 0)
+		   *rts-out* 0)))
+  (values))
+
+(defun rts-reset () 
+  ;;(print :rts-reset)
+  #+openmcl (ccl:gc)
+  #+sbcl (sb-ext:gc)
+  (setq *qcount* 0)
+  (clrhash *qentries*)
+  (rts-reset-globals)
+  (values))
+
+(defun rts-reset-globals ()
+  ;;(print :rts-reset-globals)
+  (setq *rts-pstart* nil)
+  (setq *rts-qtime* nil)
+  (values))
+
+(defun rts-stop ()
+  (rts:scheduler-stop)
+  (format t "~&; RTS stopped.~%")
+  (values))
+
+(defun rts-thread? () (rts:rts-thread? ))
+
+(eval-when (:load-toplevel :execute)
+  (rts:scheduler-hook-set! #'cm-hook)
+  (rts:scheduler-add-hook! ':before-start #'rts-reset)
+  (rts:scheduler-add-hook! ':after-stop #'rts-reset)
+  (rts:scheduler-add-hook! ':error-continue #'rts-reset-globals)
+  )
+|#
+
+
+#|
+
 
 (defvar *rts-running* nil)
 
@@ -499,3 +766,4 @@ out."
 (defun rts-now (&rest args) (rtserr 'rts-now args))
 
 (defun rts-thread? () nil)
+|#

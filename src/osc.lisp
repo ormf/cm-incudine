@@ -1,31 +1,38 @@
 (in-package :cm)
 
+;;; forward declarations from incudine-rts.lisp
+
+(declaim (special *osc-in* *osc-out*))
+
 (defobject osc (event)
        ((path :initform "/osc" :accessor osc-path)
         (types :initform "i" :accessor osc-types)
-        (message :initform 0 :accessor osc-msg))
+        (message :initform 0 :accessor osc-msg)
+        (stream :initform *osc-out* :accessor osc-stream))
      (:parameters time path message)
      (:event-streams))
 
-
-(defun osc-open (&key (host "127.0.0.1") (port 3001)
-                    (protocol :tcp)
-                    (direction :input))
+(defun osc-open-default (&key (host "127.0.0.1") (port 3001)
+                           (protocol :udp)
+                           (direction :input))
   (case direction
     (:output
      (progn
+       (if *osc-out* (osc-close-default))
        (setf *osc-out* (osc:open :host host
                                  :port port
                                  :protocol protocol
                                  :direction direction))
        (setf (osc:broadcast *osc-out*) t)
        *osc-out*))
-    (t (setf *osc-in* (osc:open :host host
-                                :port port
-                                :protocol protocol
-                                :direction :input)))))
+    (t (progn
+         (if *osc-in* (osc-close-default))
+         (setf *osc-in* (osc:open :host host
+                                  :port port
+                                  :protocol protocol
+                                  :direction :input))))))
 
-(defun osc-close (&rest args)
+(defun osc-close-default (&rest args)
   (if (or (not args)
           (member :inout args)
           (member :input args))
@@ -40,6 +47,12 @@
           (progn
             (osc:close *osc-out*)
             (setf *osc-out* nil)))))
+
+(defmacro osc-close (stream)
+  `(if (and ,stream (osc:stream ,stream))
+       (progn
+         (osc:close ,stream)
+         (setf ,stream nil))))
 
 ;;; send in incudine implemented as function:
 
