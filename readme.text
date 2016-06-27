@@ -7,13 +7,19 @@ extending it to be combined with other Common Lisp based realtime
 music systems, especially incudine
 (http://incudine.sourceforge.net). For the (much extended) current
 version please refer to
-http://www.sourceforge.net/projects/commonmusic. The README below is
-the orginial text from the old version. It is not up to date!
+http://www.sourceforge.net/projects/commonmusic. The README on the
+bottom of this page is the orginial text from the old version. It is
+not up to date!
 
 The system now enables realtime processes, either using the events
 function to an <incudine-stream> or the sprout function and supports
 realtime fudi messages in addition to osc and midi messages. To get
-this done do the following:
+this done first get the prerequisites:
+
+- incudine (http://incudine.sourceforge.net/)
+- fudi-incudine (https://github.com/ormf/fudi-incudine)
+
+Then evaluate the following:
 
 (ql:quickload "cm")
 
@@ -22,7 +28,9 @@ this done do the following:
   (sleep 1)
   (midi-open-default :direction :input)
   (midi-open-default :direction :output)
+  (osc-open-default :host "127.0.0.1" :port 3002 :direction :input)
   (osc-open-default :host "127.0.0.1" :port 3003 :direction :output)
+  (fudi-open-default :host "127.0.0.1" :port 3011 :direction :input)
   (fudi-open-default :host "127.0.0.1" :port 3012 :direction :output)
   (setf *out* (new incudine-stream))
   (setf *rts-out* *out*))
@@ -36,12 +44,24 @@ port 3012 like this:
 (sprout
    (process
      repeat 2
-     output (new midi :time (now) :keynum 60 :duration 0.5)
+     output (new fudi :time (now) :message '(1 2 3 4))
      wait 1) :at (now))
 
+(sprout
+   (process
+     repeat 2
+     output (new osc :time (now) :types "iiii" :message '(1 2 3 4))
+     wait 1) :at (now))
 
+The default time format is :sec but can also be set to :sample or :ms
+with the function #'set-time-format
 
+The functions #'at and #'now are wrappers for the same incudine
+functions which automatically translate from/to the current
+time-format.
 
+Receiving from fudi, osc and midi streams also works. Please refer to
+incudine's documentation for information how to set up receivers.
 
 ---------------------------------------------------------------------
 
