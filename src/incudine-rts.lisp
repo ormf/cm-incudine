@@ -390,6 +390,11 @@ out."
                                 :stream stream))))
   (values))
 
+(defmethod write-event ((obj function) (str incudine-stream) scoretime)
+  (declare (ignore str))
+  (at (+ (rts-now) scoretime) obj)
+  (values))
+
 ;;; dummy method to make set-receiver! happy
 (defmethod rt-stream-receive-type ((stream jackmidi:input-stream))
   nil)
