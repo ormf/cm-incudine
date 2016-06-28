@@ -329,7 +329,7 @@ out."
                (values keyn ampl)))))
 
 (defmethod write-event ((obj midi) (str incudine-stream) scoretime)
-  (declare (type (or fixnum single-float) scoretime))
+  (declare (type (or fixnum float) scoretime))
   (alexandria:if-let (stream (jackmidi-output-stream))
 ;;    (format t "~a~%" scoretime)
     (multiple-value-bind (keyn ampl)
