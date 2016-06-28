@@ -38,9 +38,6 @@
     ((:sample) (incudine:now))
     ((:ms) (/ (incudine:now) incudine::*sample-rate* 0.001))))
 
-(defun rts? (&optional arg)
-  (apply #'rts:scheduler-state? arg))
-
 (defun rts (&rest args)
   (declare (ignore args))
   (incudine:rt-start)
