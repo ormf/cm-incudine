@@ -219,7 +219,7 @@ out."
 (declaim (inline midi-note))
 (defun midi-note (stream time pitch dur velo chan)
   (at time (note-on stream pitch velo chan))
-  (at (+ time (* incudine::*sample-rate* dur)) (note-off stream pitch 0 chan)))
+  (at (+ time dur) (note-off stream pitch 0 chan)))
 
 (defun pm-message->midi-message (pmm)
   (declare (ignore pmm))

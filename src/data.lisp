@@ -242,7 +242,8 @@
 
 (defmethod rhythm
            ((val symbol) &optional (tempo *tempo*) (beat *beat*))
-           (let ((n (gethash val *rhythms*)))
+           (let* ((val (ensure-cm-symbol val))
+                  (n (gethash val *rhythms*)))
              (if n (rhythm n tempo beat)
                  (let* ((str (symbol-name val))
                         (num
@@ -386,7 +387,8 @@
                     (error "'~s' is not a logical amplitude." amp)
                     (amplitude ampl softest loudest power)))
              (if
-              (or (and (consp (car tail)) (member amp (car tail)))
+              (or (and (consp (car tail))
+                       (member amp (car tail) :test #'symbol-name=))
                   (equal (car tail) amp))
               (setf ampl (cadr tail)))))
 

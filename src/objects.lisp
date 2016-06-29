@@ -499,7 +499,7 @@
   clauses
   ops
   (let ((head forms)
-        (oper (pop forms))
+        (oper (ensure-cm-symbol (pop forms)))
         (expr nil)
         (args '())
         (loop '()))
@@ -508,7 +508,7 @@
     (setf expr (pop forms))
     (do ((stop nil))
         ((or stop (null forms)))
-      (case (car forms)
+      (case (ensure-cm-symbol (car forms))
         ((to)
          (unless (eq oper 'output)
            (loop-error ops head "'~s' is an unknown ~s modifier."
@@ -579,7 +579,7 @@
 (defun process-while-until (forms clauses ops)
   clauses
   (let ((head forms)
-        (oper (pop forms))
+        (oper (ensure-cm-symbol (pop forms)))
         (test nil)
         (stop (process-stop nil)))
     (when (null forms)
@@ -596,7 +596,7 @@
 
 (defparameter *each-operators*
   (list
-   (list 'as '#'parse-for 'iter (list 'from #'parse-numerical-for)
+   (list 'as #'parse-for 'iter (list 'from #'parse-numerical-for)
          (list 'downfrom #'parse-numerical-for)
          (list 'below #'parse-numerical-for)
          (list 'to #'parse-numerical-for)

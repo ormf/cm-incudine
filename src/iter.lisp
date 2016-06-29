@@ -79,7 +79,15 @@
      (gather-clause clauses #'loop-finally) 'returning
      (gather-clause clauses #'loop-returning))))
 
-(defun loop-op? (x ops) (assoc x ops))
+(defun symbol-name= (x y)
+  (and (symbolp x)
+       (symbolp y)
+       (string= (symbol-name x) (symbol-name y))))
+
+(defun ensure-cm-symbol (x)
+  (alexandria:ensure-symbol (symbol-name x) "CM"))
+
+(defun loop-op? (x ops) (assoc x ops :test #'symbol-name=))
 
 (defun loop-variable? (x) (and x (symbolp x)))
 
@@ -126,7 +134,8 @@
               (if (null (cddr forms))
                   (loop-error ops forms
                    "'for' clause expected but source code ran out.")
-                  (let ((path (assoc (caddr forms) (cdddr op))))
+                  (let ((path (assoc (caddr forms) (cdddr op)
+                                     :test #'symbol-name=)))
                     (if (not path)
                         (loop-error ops forms "'" (caddr forms) "'"
                          " is not valid with 'for'.")
@@ -149,7 +158,7 @@
         (incr nil))
     (do ((next nil))
         ((or (null tail) (loop-op? (car tail) ops)))
-      (setf next (pop tail))
+      (setf next (ensure-cm-symbol (pop tail)))
       (if (null tail)
           (loop-error ops forms
            "Expected expression but source code ran out."))
@@ -259,7 +268,7 @@
         (type nil))
     (do ((next nil))
         ((or (null tail) (loop-op? (car tail) ops)))
-      (setf next (pop tail))
+      (setf next (ensure-cm-symbol (pop tail)))
       (when (null tail)
         (loop-error ops head
          "Expression expected but source code ran out."))
@@ -325,7 +334,7 @@
         (step nil))
     (do ((next nil))
         ((or (null tail) (loop-op? (car tail) ops)))
-      (setf next (pop tail))
+      (setf next (ensure-cm-symbol (pop tail)))
       (if (null tail)
           (loop-error ops head
            "Expression expected but source code ran out."))
@@ -478,7 +487,7 @@
          (collector-head (col)
            (cadddr col)))
     (let ((save forms)
-          (oper (pop forms))
+          (oper (ensure-cm-symbol (pop forms)))
           (expr nil)
           (coll nil)
           (new? nil)
@@ -592,7 +601,10 @@
 
 (defun parse-while-until (forms clauses ops)
   clauses
-  (let ((head forms) (oper (pop forms)) (test nil) (stop '(go t)))
+  (let ((head forms)
+        (oper (ensure-cm-symbol (pop forms)))
+        (test nil)
+        (stop '(go t)))
     (if (null forms)
         (loop-error ops head "Missing '" oper "' expression."))
     (case oper
@@ -607,7 +619,10 @@
 
 (defun parse-thereis (forms clauses ops)
   clauses
-  (let ((oper (car forms)) (expr nil) (bool nil) (func nil))
+  (let ((oper (ensure-cm-symbol (car forms)))
+        (expr nil)
+        (bool nil)
+        (func nil))
     (if (null (cdr forms))
         (loop-error ops forms "Missing '" (car forms)
          "' expression."))
