@@ -131,27 +131,27 @@
 
 (defun samps->time (samps)
   (case *time-format*
-    ((:sec) (/ samps incudine::*sample-rate*))
+    ((:sec) (* samps incudine.util:*sample-duration*))
     ((:sample) samps)
-    ((:ms) (/ samps incudine::*sample-rate* 0.001))))
+    ((:ms) (* samps incudine.util:*sample-duration* 1000))))
 
 (defun time->samps (time)
   (case *time-format*
-    ((:sec) (* time incudine::*sample-rate*))
+    ((:sec) (* time incudine.util:*sample-rate*))
     ((:sample) time)
-    ((:ms) (* time incudine::*sample-rate* 0.001))))
+    ((:ms) (* time incudine.util:*sample-rate* 0.001))))
 
 (defun time->ms (time)
   (case *time-format*
-    ((:sec) (/ time 0.001))
-    ((:sample) (/ time incudine::*sample-rate* 0.001))
+    ((:sec) (* time 1000.0))
+    ((:sample) (* time incudine.util:*sample-duration* 1000))
     ((:ms) time)))
 
 (defun secs->samps (secs)
-  (* secs incudine::*sample-rate*))
+  (* secs incudine.util:*sample-rate*))
 
 (defun samps->secs (samps)
-  (/ samps incudine::*sample-rate*))
+  (* samps incudine.util:*sample-duration*))
 
 (defun at (time function &rest args)
   (apply #'incudine:at (time->samps time) function args))
@@ -335,11 +335,11 @@ out."
     (multiple-value-bind (keyn ampl)
         (incudine-ensure-velocity (midi-keynum obj) (midi-amplitude obj))
       (declare (type (integer 0 127) ampl))
-      (let ((time (+ (now) scoretime)))
+      (let ((time (+ (rts-now) scoretime)))
         (multiple-value-bind (keyn chan)
             (incudine-ensure-microtuning keyn (midi-channel obj) stream str
-                                         ;; pitch bend one sample before the note
-                                         (- time 1.0d0))
+                                         ;; pitch bend before the note
+                                         (- time 1e-5))
           (declare (type (signed-byte 8) keyn chan))
           (unless (< keyn 0)
             (midi-note stream time keyn

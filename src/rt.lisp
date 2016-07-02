@@ -34,9 +34,9 @@
 
 (defun rts-now ()
   (case *time-format*
-    ((:sec) (/ (incudine:now) incudine::*sample-rate*))
+    ((:sec) (* (incudine:now) incudine::*sample-duration*))
     ((:sample) (incudine:now))
-    ((:ms) (/ (incudine:now) incudine::*sample-rate* 0.001))))
+    ((:ms) (* (incudine:now) incudine::*sample-duration* 1000))))
 
 (defun rts (&rest args)
   (declare (ignore args))
