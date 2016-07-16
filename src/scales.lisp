@@ -10,6 +10,8 @@
 
 (in-package :cm)
 
+(defparameter *tuning-base* 440)
+
 (defparameter *chromatic-scale* nil)
 
 (defparameter *scale* nil)
@@ -1126,9 +1128,12 @@
                (encode-interval (subseq str beg pos) (* size sign))))
             (t (encode-interval ref ref2))))
 
-(setf *chromatic-scale*
+(defun set-tuning-base! (freq)
+  (setf *tuning-base* freq)
+  (setf *chromatic-scale*
         (make-instance <tuning> :name "chromatic-scale" :octaves
-                       '(-1 10) :lowest 6.875 :keynum-offset 3
+                       '(-1 10) :lowest (float (* *tuning-base* (expt 2 -6)))
+                       :keynum-offset 3
                        :default-octave 5 :cents
                        '((100 (c) (cn :accidental n)
                           (bs :accidental s :octave -1)
@@ -1156,5 +1161,11 @@
                          (100 (b) (bn :accidental n)
                           (cf :accidental f :octave 1)
                           (ass :accidental ss)))))
+  (setf *scale* *chromatic-scale*))
 
-(setf *scale* *chromatic-scale*)
+(set-tuning-base! *tuning-base*)
+
+
+
+
+(hertz 69)

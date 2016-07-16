@@ -263,7 +263,6 @@
 (defun scheduler-do-seq (entry time start stream type sched)
   time
   (let ((head (cdr entry)) (event nil) (next nil))
-    (break "scheduler-do-seq! entry: ~a" entry)
     (do ()
         ((or event (null head)) nil)
       (setf next (pop head))

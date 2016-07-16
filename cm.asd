@@ -45,7 +45,7 @@
     :version "2.12.0"
     :author "Rick Taube <taube (at) uiuc.edu>"
     :licence "LLGPL"
-    :depends-on (:incudine :fudi #+sbcl sb-posix)
+    :depends-on (:incudine :fudi :fomus #+sbcl sb-posix)
     :components
     ((:module "src"
       :serial t

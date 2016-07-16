@@ -218,7 +218,10 @@
 	   #:*priority* #:*policy* #:*resolution* #:*error-format*
 	   #:current-thread #:rts-thread?
 	   #:random-seed #:between #:rescale #:odds #:pickl #:drunk 
-	   #:wander #:shuffle #:interpl #:rhythm))
+	   #:wander #:shuffle #:interpl #:rhythm
+           #:midi-open-default #:midi-close-default
+           #:fudi-open-default #:fudi-close-default
+           ))
 
 (in-package :rts)
 
@@ -552,7 +555,7 @@
            :scale-mod :scale-order :*scale* :scale= :scale> :scale>=
            :scale< :scale<= :scaler->cents :sco-file :seq
            :set-clm-output-hook! :set-midi-output-hook!
-           :set-sco-output-hook! :shell :shuffle :*softest* :sprout
+           :set-sco-output-hook! :set-tuning-base! :shell :shuffle :*softest* :sprout
            :stop :subcontainers :subobjects :sv :sv+ :sv* :*tempo*
            :tendency :thunk :*time-slots* :transpose :transposer :true
            :tuning :vary :wait :wait-until :weighting)
