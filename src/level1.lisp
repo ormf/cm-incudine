@@ -374,7 +374,7 @@
         (func nil)
         (tests '())
         (done nil))
-    
+;;    (break "parsed: ~a" parsed)
     (setf tests (loop-end-tests parsed))
     (setf done (process-stop nil))
     (if (not (null tests))

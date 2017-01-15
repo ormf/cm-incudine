@@ -69,15 +69,16 @@
                ((null clauses) l)
              (setf l (append l (funcall accessor (car clauses))))
              (setf clauses (cdr clauses)))))
-    (make-loop-clause 'operator caller 'bindings
-     (gather-clause clauses #'loop-bindings) 'collectors
-     (gather-clause clauses #'loop-collectors) 'initially
-     (gather-clause clauses #'loop-initially) 'end-tests
-     (gather-clause clauses #'loop-end-tests) 'looping
-     (gather-clause clauses #'loop-looping) 'stepping
-     (gather-clause clauses #'loop-stepping) 'finally
-     (gather-clause clauses #'loop-finally) 'returning
-     (gather-clause clauses #'loop-returning))))
+    (make-loop-clause
+     'operator caller
+     'bindings (gather-clause clauses #'loop-bindings)
+     'collectors (gather-clause clauses #'loop-collectors)
+     'initially (gather-clause clauses #'loop-initially)
+     'end-tests (gather-clause clauses #'loop-end-tests)
+     'looping (gather-clause clauses #'loop-looping)
+     'stepping (gather-clause clauses #'loop-stepping)
+     'finally (gather-clause clauses #'loop-finally)
+     'returning (gather-clause clauses #'loop-returning))))
 
 (defun symbol-name= (x y)
   (and (symbolp x)
@@ -348,8 +349,8 @@
          (if init
              (loop-error ops head "Duplicate 'then'."))
          (setf init loop)
-         (setf loop nil)
-         (setf step `(setf ,var ,(pop tail)))
+         (setf loop `(setf ,var ,(pop tail)))
+         (setf step nil)
          (setf type next))
         (t
          (loop-error ops head "'" next
@@ -759,7 +760,7 @@
             (setf op (loop-op? (car forms) ops))
             (if (not op)
                 (loop-error ops previous "Found '" (car forms)
-                 "' where operator expected."))
+                     "' where operator expected."))
             (multiple-value-bind (a b)
                 (funcall (cadr op) forms clauses ops)
               (setf clause a)
@@ -769,8 +770,8 @@
                 (if (op-type? op 'iter)
                     (if (not (null body))
                         (loop-error ops previous "'" (car op)
-                         "' clause cannot follow '" (car body)
-                         "'."))))
+                             "' clause cannot follow '" (car body)
+                             "'."))))
             (setf previous forms)
             (setf forms remains)
             (setf clauses (append clauses (list clause))))
