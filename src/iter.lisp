@@ -268,10 +268,11 @@
         (bind '())
         (data nil)
         (init '())
-        (loop '())
+;;        (loop '())
         (incr nil)
         (stop '())
         (step '())
+        (step-notest '())
         (type nil))
     (do ((next nil))
         ((or (null tail) (loop-op? (car tail) ops)))
@@ -302,10 +303,10 @@
      ((eq type 'across)
       (let ((pos (gensym "v")) (max (gensym "v")))
         (push (make-binding pos 0) bind)
-        (push (make-binding max nil) bind)
-        (push `(setf ,max (length ,seq)) init)
+        (push (make-binding max `(length ,seq)) bind)
+        (push `(setf ,var (elt ,seq ,pos)) init)
         (push `(setf ,pos (+ 1 ,pos)) step)
-        (push `(setf ,var (elt ,seq ,pos)) loop)
+        (push `(setf ,var (elt ,seq ,pos)) step-notest)
         (push `(not (< ,pos ,max)) stop)))
      ((eq type 'over)
       (let ((getit
@@ -319,15 +320,20 @@
               (push `(setf ,seq (,(cadr incr) ,seq)) step)
               (push `(setf ,seq (,incr ,seq)) step))
           (push `(setf ,seq (cdr ,seq)) step))
-      (push
+      
        (if (eq type 'in)
-           `(setf ,var (car ,seq))
-           `(setf ,var ,seq))
-       loop)
+           (progn
+             (push `(setf ,var (car ,seq)) init)
+             (push `(setf ,var (car ,seq)) step-notest))
+           (progn
+             (push `(setf ,var ,seq) init)
+             (push `(setf ,var ,seq) step-notest))
+       )
       (push `(null ,seq) stop)))
     (values
      (make-loop-clause 'operator 'for 'bindings (reverse bind)
-      'end-tests stop 'initially init 'looping loop 'stepping step)
+                       'end-tests stop 'initially init 'stepping step
+                       'stepping-notest step-notest)
      tail)))
 
 (defun parse-general-iteration (forms clauses ops)
@@ -338,6 +344,7 @@
         (init nil)
         (type nil)
         (step nil)
+        (then nil)
         (step-notest nil))
     (do ((next nil))
         ((or (null tail) (loop-op? (car tail) ops)))
@@ -350,10 +357,13 @@
          (if type
              (loop-error ops head "Duplicate '='."))
          (setf step-notest `(setf ,var ,(pop tail)))
+         (setf init step-notest)
+         (setf then nil)
          (setf type next))
         ((then)
-         (if init
+         (if then
              (loop-error ops head "Duplicate 'then'."))
+         (setf then t)
          (setf init step-notest)
          (setf step-notest `(setf ,var ,(pop tail)))
          (setf step nil)
