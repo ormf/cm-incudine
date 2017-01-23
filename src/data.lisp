@@ -200,7 +200,7 @@
 
 (defparameter *tempo* 60.0)
 
-(defparameter *beat* 0.25)
+(defparameter *beat* 1/4)
 
 (defparameter *rhythms* (make-hash-table :size 31 :test #'equal))
 

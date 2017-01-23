@@ -249,7 +249,8 @@ of the io stream. Returns the io stream."
           (if
            (and (consp args)
                 (or (stringp (car args)) (eq (car args) nil)
-                    (typep (car args) <object>)))
+                    (typep (car args) <object>)
+                    (typep (car args) 'jackmidi:stream)))
            (pop args) (current-output-stream)))
          (ahead
           (if
@@ -257,7 +258,6 @@ of the io stream. Returns the io stream."
                 (or (consp (car args)) (numberp (car args))))
            (pop args) 0))
          (err? ':error))
-;;    (break "to: ~a" to)
     (when (oddp (length args))
       (error "events: uneven initialization list: ~s." args))
     (flet ((getobj (x)

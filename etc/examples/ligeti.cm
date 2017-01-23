@@ -14,6 +14,7 @@
 ;;;
 ;;; Orig-Date:    07-Mar-99 at 19:38:40
 ;;; Last-Mod:     18-Nov-02 at 00:37:08 by Tobias Kunze Briseno
+;;; Last-Mod:     22-Jan-17 at 17:05 by Orm Finnendahl
 ;;;
 ;;; Revision:     
 ;;;
@@ -25,14 +26,18 @@
 ;;;   08-May-02   hkt  converted to transposer and range objects.
 ;;;   12-Nov-02   hkt  converted to cm 2.4.0
 ;;;   17-Nov-02   tk   fixed voicing lookups, final synchronization; added
-;;;                    channels 
+;;;                    channels
+;;;
+;;;   22-Jan-17   of   fixed error in 'desordre-voices due to deprecated
+;;;                    :on keyword in transposer.
+;;;
 
 (in-package :cm)
 
 ;;;
 ;;; Converting eighth note pulse to time
 
-(define eighth-pulse (rhythm 'e 76 'w))
+(define eighth-pulse (rhythm 'e 1 76))
 
 (define (eighth-time number-of-eighths)
   (* eighth-pulse number-of-eighths))
@@ -281,74 +286,73 @@
 ;;; Finally, add the "correct" voicings
 
 (define (desordre-voices mode ntes rhys chord voimap fgchan bgchan)
-  (let ((mode-octave (scale-divisions mode))
-        (fg-time 0)
-        (fg-8ths 0)
-        (mode-deg 0))
-    
-    (list
-     ;; foreground process
-     (process with rhy and voi and key
-              and voices = (new transposer
-                             :of (new heap :of chord
-                                     :for (pval voi))
-                             :on (pval mode-deg))
-              for count from 0
-              set fg-time = (now)
-              set mode-deg = (next ntes)
-              set key = (keynum mode-deg :from mode)
-              set fg-8ths = (next rhys)
-              set rhy = (eighth-time fg-8ths)
-              set voi = (lookup count voimap)
-              output
-              (new midi :time (now)
-		   :channel fgchan
-		:keynum key
-		:duration rhy
-		:amplitude fg-amp)
-              wait rhy
-              if (equal? voi true)
-              ;;
-              ;; add lower octave until 1 after cycle 11 ...
-              ;;
-              output 
-              (new midi :time (now)
-		   :channel fgchan
-                   :keynum (- key 12) 
-                   :duration rhy
-                   :amplitude fg-amp)
-              else 
-              ;; ... else add:  2 voices until  2 before cycle 12
-              ;;                3 voices until 11 after  cycle 12
-              ;;                4 voices thereafter
-              output
-              (loop for k in (next voices true)
-                    collect (new midi
-				 :channel fgchan
-                              :time (now)
-                              :keynum (keynum k :from mode)
-                              :duration (- rhy .01)))
-              until (eop? rhys))
-     ;; background process. 
-     (process with notes = (new range
-                             :from (pval (- mode-deg 
-                                            mode-octave))
-                             :stepping
-                             (new weighting :of '((1 :weight 3)
-						  2 
-						  (3 :weight .5 :max 1)))
-                             :for (pval fg-8ths))
-              for i below 1064
-              for k = (keynum (next notes) :from mode)
-              unless (or (= (now) fg-time)
-                         (not (<= 0 k 127)))
-              output (new midi 
-			  :channel bgchan
-                       :time (now)
-                       :keynum k
-                       :duration (- eighth-pulse .01)
-                       :amplitude bg-amp)
-              wait eighth-pulse))))
+    (let ((mode-octave (scale-divisions mode))
+          (fg-time 0)
+          (fg-8ths 0)
+          (mode-deg 0))
+      (list
+       ;; foreground process
+       (process with rhy and voi and key
+                and voices = (new transposer
+                               :of (new heap :of chord
+                                        :for (pval voi))
+                               :by (new cycle :of (pval mode-deg)))
+                for count from 0
+                set fg-time = (now)
+                set mode-deg = (next ntes)
+                set key = (keynum mode-deg :from mode)
+                set fg-8ths = (next rhys)
+                set rhy = (eighth-time fg-8ths)
+                set voi = (lookup count voimap)
+                output
+                (new midi :time (now)
+                     :channel fgchan
+                     :keynum key
+                     :duration rhy
+                     :amplitude fg-amp)
+                wait rhy
+                if (equal? voi true)
+                ;;
+                ;; add lower octave until 1 after cycle 11 ...
+                ;;
+                output 
+                (new midi :time (now)
+                     :channel fgchan
+                     :keynum (- key 12) 
+                     :duration rhy
+                     :amplitude fg-amp)
+                else 
+                ;; ... else add:  2 voices until  2 before cycle 12
+                ;;                3 voices until 11 after  cycle 12
+                ;;                4 voices thereafter
+                output
+                (loop for k in (next voices true)
+                   collect (new midi
+                             :channel fgchan
+                             :time (now)
+                             :keynum (keynum k :from mode)
+                             :duration (- rhy .01)))
+                until (eop? rhys))
+       ;; background process. 
+       (process with notes = (new range
+                               :from (pval (- mode-deg 
+                                              mode-octave))
+                               :stepping
+                               (new weighting :of '((1 :weight 3)
+                                                    2 
+                                                    (3 :weight .5 :max 1)))
+                               :for (pval fg-8ths))
+                for i below 1064
+                for k = (keynum (next notes) :from mode)
+                unless (or (= (now) fg-time)
+                           (not (<= 0 k 127)))
+                output (new midi 
+                         :channel bgchan
+                         :time (now)
+                         :keynum k
+                         :duration (- eighth-pulse .01)
+                         :amplitude bg-amp)
+                wait eighth-pulse))))
 
 (define (lig5 )
   (events (append 
