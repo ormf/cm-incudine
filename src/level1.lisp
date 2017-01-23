@@ -374,7 +374,6 @@
         (func nil)
         (tests '())
         (done nil))
-;;    (break "parsed: ~a" parsed)
     (setf tests (loop-end-tests parsed))
     (setf done (process-stop nil))
     (if (not (null tests))
@@ -382,7 +381,7 @@
         (if (null (cdr tests))
           (setf tests (car tests))
           (setf tests (cons 'or tests)))
-        (setf tests `((if ,tests ,done))))
+        )
       (unless (process-code-terminates? (loop-looping parsed)
                                         (process-stop nil))
         ;(or (member 'while (loop-operator parsed))
@@ -392,10 +391,12 @@
           You can use REPEAT, WHILE or UNTIL to limit iteration.")))
     (setf code
           `(block :process
-             ,@ tests
                 ,@ (loop-looping parsed)
                    ,@ (loop-stepping parsed)
-                      ;; (enqueue *process* *qnext* *qstart*)
+                      ,@ `((if ,tests ,done
+                               (progn
+                                 ,@ (loop-stepping-notest parsed))))
+                         ;; (enqueue *process* *qnext* *qstart*)
                       t 
                       ))
     ;; if there is a finally clause wrap the block
@@ -414,8 +415,10 @@
       func
       ;; use let* sequential binding
       `(let* ,(loop-bindings parsed)
-         ,@(loop-initially parsed)
-         ,func))))
+         (unless ,tests
+           (progn
+             ,@(loop-initially parsed)
+             ,func))))))
 
 (defun expand-defprocess (forms)
   `(defun ,(first forms) ,(second forms) ,@(cddr forms)))

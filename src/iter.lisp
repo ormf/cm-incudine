@@ -38,16 +38,20 @@
 
 (defun loop-stepping-set! (c x) (setf (elt c 6) x))
 
-(defun loop-finally (c) (elt c 7))
+(defun loop-stepping-notest (c) (elt c 7))
 
-(defun loop-finally-set! (c x) (setf (elt c 7) x))
+(defun loop-stepping-notest-set! (c x) (setf (elt c 7) x))
 
-(defun loop-returning (c) (elt c 8))
+(defun loop-finally (c) (elt c 8))
 
-(defun loop-returning-set! (c x) (setf (elt c 8) x))
+(defun loop-finally-set! (c x) (setf (elt c 8) x))
+
+(defun loop-returning (c) (elt c 9))
+
+(defun loop-returning-set! (c x) (setf (elt c 9) x))
 
 (defun make-loop-clause (&rest args)
-  (let ((v (vector nil '() '() '() '() '() '() '() '())))
+  (let ((v (vector nil '() '() '() '() '() '() '() '() '())))
     (if (null args)
         v
         (do ((a args (cddr a)))
@@ -60,6 +64,7 @@
             ((end-tests) (loop-end-tests-set! v (cadr a)))
             ((looping) (loop-looping-set! v (cadr a)))
             ((stepping) (loop-stepping-set! v (cadr a)))
+            ((stepping-notest) (loop-stepping-notest-set! v (cadr a)))
             ((finally) (loop-finally-set! v (cadr a)))
             ((returning) (loop-returning-set! v (cadr a))))))))
 
@@ -77,6 +82,7 @@
      'end-tests (gather-clause clauses #'loop-end-tests)
      'looping (gather-clause clauses #'loop-looping)
      'stepping (gather-clause clauses #'loop-stepping)
+     'stepping-notest (gather-clause clauses #'loop-stepping-notest)
      'finally (gather-clause clauses #'loop-finally)
      'returning (gather-clause clauses #'loop-returning))))
 
@@ -331,8 +337,8 @@
         (tail (cddr forms))
         (init nil)
         (type nil)
-        (loop nil)
-        (step nil))
+        (step nil)
+        (step-notest nil))
     (do ((next nil))
         ((or (null tail) (loop-op? (car tail) ops)))
       (setf next (ensure-cm-symbol (pop tail)))
@@ -343,31 +349,29 @@
         ((=)
          (if type
              (loop-error ops head "Duplicate '='."))
-         (setf loop `(setf ,var ,(pop tail)))
+         (setf step-notest `(setf ,var ,(pop tail)))
          (setf type next))
         ((then)
          (if init
              (loop-error ops head "Duplicate 'then'."))
-         (setf init loop)
-         (setf loop `(setf ,var ,(pop tail)))
+         (setf init step-notest)
+         (setf step-notest `(setf ,var ,(pop tail)))
          (setf step nil)
          (setf type next))
         (t
          (loop-error ops head "'" next
           "' is not valid with 'for'."))))
     (values
-     (make-loop-clause 'operator 'for 'bindings
-      (list (make-binding var nil)) 'initially
+     (make-loop-clause
+      'operator 'for 'bindings
+      (list (make-binding var nil))
+      'initially
       (if init
           (list init)
           '())
-      'looping
-      (if loop
-          (list loop)
-          '())
-      'stepping
-      (if step
-          (list step)
+      'stepping-notest
+      (if step-notest
+          (list step-notest)
           '()))
      tail)))
 
