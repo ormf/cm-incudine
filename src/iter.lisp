@@ -414,8 +414,7 @@
             (if var
                 (if expr
                     (progn
-                     (push (make-binding var nil) bind)
-                     (push `(setf ,var ,expr) init))
+                      (push (make-binding var expr) bind))
                     (push (make-binding var nil) bind))
                 (loop-error ops head "Extraneous 'and'.")))
         (setf var nil) (setf expr nil) (setf and? t) (setf need t))
@@ -434,8 +433,7 @@
         (if var
             (if expr
                 (progn
-                 (push (make-binding var nil) bind)
-                 (push `(setf ,var ,expr) init))
+                 (push (make-binding var expr) bind))
                 (push (make-binding var nil) bind))))
     (values
      (make-loop-clause 'operator 'with 'bindings (reverse bind)
@@ -829,28 +827,28 @@
         (list 'if #'parse-conditional 'task)
         (list 'finally #'parse-finally nil)))
 
-(defmacro iter (&body args) (cltl2-loop args))
-
 (defun cltl2-loop (forms)
   (let* ((iter (parse-iteration 'iter forms *loop-operators*))
          (retn
           (apply (cadddr (assoc 'return *loop-operators*))
                  (list (car (loop-returning iter))))))
     `(,'let ,(loop-bindings iter) ,@(loop-initially iter)
-      (block nil
-        (tagbody
-         :loop
-         ,@(let ((tests (loop-end-tests iter)))
-             (if tests
-                 (list
-                  `(if ,(if (cdr tests)
-                            (cons 'or tests)
-                            (car tests))
-                       (go t)))
-                 (list)))
-         ,@(loop-looping iter)
-         ,@(loop-stepping iter)
-          (go :loop)
-         t
-         ,@(loop-finally iter)
-         ,retn)))))
+            (block nil
+              (tagbody
+               :loop
+                 ,@(let ((tests (loop-end-tests iter)))
+                     (if tests
+                         (list
+                          `(if ,(if (cdr tests)
+                                    (cons 'or tests)
+                                    (car tests))
+                               (go t)))
+                         (list)))
+                 ,@(loop-looping iter)
+                 ,@(loop-stepping iter)
+                 (go :loop)
+               t
+                 ,@(loop-finally iter)
+                 ,retn)))))
+
+(defmacro iter (&body args) (cltl2-loop args))
