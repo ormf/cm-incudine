@@ -131,13 +131,40 @@
       (terpri)
       (error "illegal loop syntax"))))
 
+(defun parse-dbind-step (left right)
+  (cond ((null left) '())
+        ((symbolp left)
+         `((setq ,left ,right)))
+        ((consp (first left))
+         (cons
+          (parse-dbind-step (first left) `(first ,right))
+          (let ((res (parse-dbind-step (rest left) right)))
+            (if res (cons `(setq ,right (rest ,right)) res)))))
+        ((symbolp (first left))
+         (cons
+          `(setq ,(first left) (first ,right))
+          (let ((res (parse-dbind-step (rest left) right)))
+            (if res (cons `(setq ,right (rest ,right)) res)))))))
+
+(defun parse-dbind-vars (left)
+  (cond ((null left) '())
+        ((consp (first left))
+         (cons
+          (parse-dbind-vars (first left))
+          (parse-dbind-vars (rest left))))
+        ((symbolp (first left))
+         (cons
+          (first left)
+          (parse-dbind-vars (rest left))))))
+
+
 (defun parse-for (forms clauses ops)
   (let ((op (loop-op? (car forms) ops)))
     (if (null (cdr forms))
         (loop-error ops forms
          "Variable expected but source code ran out.")
         (let ((var (cadr forms)))
-          (if (loop-variable? var)
+          (if (or (loop-variable? var) (consp var))
               (if (null (cddr forms))
                   (loop-error ops forms
                    "'for' clause expected but source code ran out.")
@@ -259,10 +286,12 @@
         ignore
         (values clause (cddr forms)))))
 
+
 (defun parse-sequence-iteration (forms clauses ops)
   clauses
   (let ((head forms)
         (var (cadr forms))
+        (vars '())
         (seq (gensym "v"))
         (tail (cddr forms))
         (bind '())
@@ -273,7 +302,16 @@
         (stop '())
         (step '())
         (step-notest '())
-        (type nil))
+        (type nil)
+        (tmp-seq '())
+        (tmp-step '()))
+    (if (consp var)
+        (progn
+          (setf tmp-seq (gensym "tmp-seq"))
+          (setf vars (parse-dbind-vars var))
+          (push tmp-seq vars)
+          (setf tmp-step (reverse (parse-dbind-step var tmp-seq))))
+        (push var vars))
     (do ((next nil))
         ((or (null tail) (loop-op? (car tail) ops)))
       (setf next (ensure-cm-symbol (pop tail)))
@@ -297,39 +335,79 @@
         (t
          (loop-error ops head "'" next
           "' is not valid with 'for'."))))
-    (push (make-binding var nil) bind)
+    (dolist (var vars)
+      (push (make-binding var nil) bind))
     (push (make-binding seq data) bind)
     (cond
-     ((eq type 'across)
-      (let ((pos (gensym "v")) (max (gensym "v")))
-        (push (make-binding pos 0) bind)
-        (push (make-binding max `(length ,seq)) bind)
-        (push `(setf ,var (elt ,seq ,pos)) init)
-        (push `(setf ,pos (+ 1 ,pos)) step)
-        (push `(setf ,var (elt ,seq ,pos)) step-notest)
-        (push `(not (< ,pos ,max)) stop)))
-     ((eq type 'over)
-      (let ((getit
-             (if incr
-                 `(setf ,var (next ,seq ,incr))
-                 `(setf ,var (next ,seq)))))
-        (push `(progn ,getit (eod? ,seq)) stop)))
-     (t
-      (if incr
-          (if (and (listp incr) (eq (car incr) 'quote))
-              (push `(setf ,seq (,(cadr incr) ,seq)) step)
-              (push `(setf ,seq (,incr ,seq)) step))
-          (push `(setf ,seq (cdr ,seq)) step))
-      
+      ((eq type 'across)
+       (let ((pos (gensym "v")) (max (gensym "v")))
+         (push (make-binding pos 0) bind)
+         (push (make-binding max `(length ,seq)) bind)
+         (if (consp var)
+             (progn
+               (push `(setf ,tmp-seq (elt ,seq ,pos)) init)
+               (dolist (assignment tmp-step)
+                 (push assignment init)))
+             (push `(setf ,var (elt ,seq ,pos)) init))
+         (push `(setf ,pos (+ 1 ,pos)) step)
+         (if (consp var)
+             (progn
+               (push `(setf ,tmp-seq (elt ,seq ,pos)) step-notest)
+               (dolist (assignment tmp-step)
+                 (push assignment init)))
+             (push `(setf ,var (elt ,seq ,pos)) step-notest)) 
+         (push `(not (< ,pos ,max)) stop)))
+      ((eq type 'over)
+       (if (consp var)
+             (progn
+               (dolist (assignment tmp-step)
+                 (push assignment init)
+                 (push assignment step))
+               (if incr
+                   (progn
+                     (push `(setf ,tmp-seq (next ,seq ,incr)) init)
+                     (push `(setf ,tmp-seq (next ,seq ,incr)) step))
+                   (progn
+                     (push `(setf ,tmp-seq (next ,seq)) init)
+                     (push `(setf ,tmp-seq (next ,seq)) step)))))
+       (if incr
+           (progn
+             (push `(setf ,var (next ,seq ,incr)) init)
+             (push `(setf ,var (next ,seq ,incr)) step))
+           (progn
+             (push `(setf ,var (next ,seq)) init)
+             (push `(setf ,var (next ,seq)) step)))
+       (push `(eod? ,seq) stop))
+      (t
+       (if incr
+           (if (and (listp incr) (eq (car incr) 'quote))
+               (push `(setf ,seq (,(cadr incr) ,seq)) step)
+               (push `(setf ,seq (,incr ,seq)) step))
+           (push `(setf ,seq (cdr ,seq)) step))
+       
        (if (eq type 'in)
-           (progn
-             (push `(setf ,var (car ,seq)) init)
-             (push `(setf ,var (car ,seq)) step-notest))
-           (progn
-             (push `(setf ,var ,seq) init)
-             (push `(setf ,var ,seq) step-notest))
-       )
-      (push `(null ,seq) stop)))
+           (if (consp var)
+               (progn
+                 (dolist (assignment tmp-step)
+                   (push assignment init)
+                   (push assignment step-notest))
+                 (push `(setf ,tmp-seq (car ,seq)) init)
+                 (push `(setf ,tmp-seq (car ,seq)) step-notest))
+               (progn
+                 (push `(setf ,var (car ,seq)) init)
+                 (push `(setf ,var (car ,seq)) step-notest)))
+           (if (consp var) ;;; (eq type 'on)
+               (progn
+                 (dolist (assignment tmp-step)
+                   (push assignment init)
+                   (push assignment step-notest))
+                 (push `(setf ,tmp-seq ,seq) init)
+                 (push `(setf ,tmp-seq ,seq) step-notest))
+               (progn
+                 (push `(setf ,var ,seq) init)
+                 (push `(setf ,var ,seq) step-notest)))
+           )
+       (push `(null ,seq) stop)))
     (values
      (make-loop-clause 'operator 'for 'bindings (reverse bind)
                        'end-tests stop 'initially init 'stepping step
