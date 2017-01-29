@@ -415,10 +415,9 @@
       func
       ;; use let* sequential binding
       `(let* ,(loop-bindings parsed)
+         ,@(loop-initially parsed)
          (unless ,tests
-           (progn
-             ,@(loop-initially parsed)
-             ,func))))))
+           ,func)))))
 
 (defun expand-defprocess (forms)
   `(defun ,(first forms) ,(second forms) ,@(cddr forms)))
