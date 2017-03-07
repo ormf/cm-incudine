@@ -53,9 +53,7 @@
 ;(defun make-load-form (obj)
 ;  (pcl::make-load-form obj))
 
-(defun finalize-class (class) 
-  class
-  )
+(defun finalize-class (class) class)
 
 (defmethod validate-class ((class t) (superclass t))
   ;; this is a no-op except in OpenMCL 014

@@ -369,9 +369,9 @@
            ((not (null type)) (setf tune (car type))
             (setf num1 (if (consp tuning) (pop tuning) 0))
             (setf num2 tune)
-            (when (> (+ num1 num2) 15)
+            (when (> (+ num1 num2 -1) 15)
               (error "tuning range ~s-~s not in channel range 0-15."
-                     num1 (+ num1 num2)))
+                     num1 (+ num1 num2 -1)))
             (if (equal tune 1)
                 (progn
                  (microtune-channels io 1 (midi-stream-bend-width io)
@@ -399,7 +399,7 @@
       (loop repeat divisions for c from channel-offset for m =
             (let ((bend
                    (round
-                    (rescale (/ c divisions) (- width) width -8192
+                    (rescale (/ (- c channel-offset) divisions) (- width) width -8192
                      8191))))
               (make-instance (find-class 'midi-pitch-bend) :channel c
                              :time 0 :bend bend))

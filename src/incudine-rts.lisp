@@ -82,6 +82,42 @@
 (defmethod initialize-io ((obj incudine-stream))
   (channel-tuning-init obj))
 
+(defmethod open-io ((obj jackmidi:stream) dir &rest args)
+  (declare (ignore dir args))
+;;;  (format t "open-io: ~a, io-open: ~a" obj (io-open obj))
+           (when (not (io-open obj)))
+           obj)
+
+(defmethod close-io ((obj jackmidi:stream) &rest mode)
+  (declare (ignore obj mode))
+  (values))
+
+(defun midi-close-default (&rest args)
+  (if (or (member :inout args)
+          (member :input args)
+          (not args))
+      (if *midi-in*
+          (progn
+            (jackmidi:close *midi-in*)
+            (setf *midi-in* nil))))
+  (if (or (member :inout args)
+          (member :output args)
+          (not args))
+      (if *midi-out*
+          (progn
+            (jackmidi:close *midi-out*)
+            (setf *midi-out* nil)))))
+
+(defun midi-open-default (&key (direction :input))
+  (case direction
+    (:output
+     (progn
+       (midi-close-default :output)
+       (setf *midi-out* (jackmidi:open :direction :output))))
+    (t (progn
+         (midi-close-default :input)
+         (setf *midi-in* (jackmidi:open :direction :input))))))
+
 (defun incudine-open (&rest args)
   (apply #'open-io "incudine-rts.ic" t args))
 
@@ -101,33 +137,6 @@
        (close-io port ':force))
       port)
   port)
-
-(defun midi-close-default (&rest args)
-  (if (or (member :inout args)
-          (member :input args)
-          (not args))
-      (if *midi-in*
-          (progn
-            (jackmidi:close *midi-in*)
-            (setf *midi-in* nil))))
-  (if (or (member :inout args)
-          (member :output args)
-          (not args))
-      (if *midi-out*
-          (progn
-            (jackmidi:close *midi-out*)
-            (setf *midi-out* nil)))))
-
-
-(defun midi-open-default (&key (direction :input))
-  (case direction
-    (:output
-     (progn
-       (midi-close-default :output)
-       (setf *midi-out* (jackmidi:open :direction :output))))
-    (t (progn
-         (midi-close-default :input)
-         (setf *midi-in* (jackmidi:open :direction :input))))))
 
 (defun samps->time (samps)
   (case *time-format*
@@ -175,8 +184,7 @@
 
 (declaim (inline midi-out))
 (defun midi-out (stream status data1 data2 data-size)
-  "create a closure to defer a call to jm_write_event
-out."
+  "create a closure to defer a call to jm_write_event."
   (lambda ()
     (jackmidi:write-short stream (jackmidi:message status data1 data2) data-size)))
 
@@ -268,9 +276,11 @@ out."
            )
 
 (defun incudine-ensure-microtuning (keyn chan stream incudine-stream time)
+  "return values keynum and chan according to tuning specs in stream."
   (declare (type (or fixnum single-float symbol) keyn)
            (type (integer 0 15) chan)
            (type jackmidi:output-stream stream)
+           (type incudine-stream incudine-stream)
            (type incudine.util:sample time)
            (optimize speed))
   (flet ((truncate-float (k &optional round-p)
@@ -330,8 +340,9 @@ out."
 
 (defmethod write-event ((obj midi) (str incudine-stream) scoretime)
   (declare (type (or fixnum float) scoretime))
-  (alexandria:if-let (stream (jackmidi-output-stream))
+  (alexandria:if-let (stream (or (incudine-output str) (jackmidi-output-stream)))
 ;;    (format t "~a~%" scoretime)
+;;    (break "write-event (midi): ~a~%~a~%" obj str)
     (multiple-value-bind (keyn ampl)
         (incudine-ensure-velocity (midi-keynum obj) (midi-amplitude obj))
       (declare (type (integer 0 127) ampl))
@@ -349,17 +360,20 @@ out."
 
 (defmethod write-event
     ((obj midi-event) (str incudine-stream) scoretime)
-  (alexandria:if-let (stream (jackmidi-output-stream))
+  (alexandria:if-let (stream (or (incudine-output str) (jackmidi-output-stream)))
+;;    (break "write-event: ~a" obj)
     (typecase obj
-      (midi-channel-event
-       (at (+ (rts-now) scoretime)
-         (midi-out stream
-           (logior (ash (midi-event-opcode obj) 4) (midi-event-channel obj))
-           (midi-event-data1 obj) (midi-event-data2 obj) 3))))))
+         (midi-channel-event
+          (at (+ (rts-now) scoretime)
+              (progn
+                (midi-out
+                 stream
+                 (logior (ash (midi-event-opcode obj) 4) (midi-event-channel obj))
+                 (midi-event-data1 obj) (midi-event-data2 obj) 3)))))))
 ;; (midi-write-message (midi-event->midi-message obj) str scoretime nil)
 
 (defmethod write-event ((obj integer) (str incudine-stream) scoretime)
-  (alexandria:if-let (stream (jackmidi-output-stream))
+  (alexandria:if-let (stream (or (incudine-output str) (jackmidi-output-stream)))
     (at (+ (rts-now) scoretime)
                      (midi-out
                       stream
@@ -392,6 +406,7 @@ out."
 
 (defmethod write-event ((obj function) (str incudine-stream) scoretime)
   (declare (ignore str))
+;;  (break "write-event (fn): ~a" obj)
   (at (+ (rts-now) scoretime) obj)
   (values))
 
@@ -479,9 +494,12 @@ out."
   ;; time is either in sec msec or usec
   ;; sched is either :rts or nil, nil means from repl
   ;; add check for sprout without rts running.
-  (let ((repl? (not (eql sched ':rts)))
+  (declare (ignore sched))
+  (let (
+;;;        (repl? (not (eql sched ':rts)))
 	(data 0)
-	(flag 0))
+;;;	(flag 0)
+        )
     (cond ((= (logand handle #xF) *qentry-message*)
 	   ;; integer midi messages can be inserted directly into the
 	   ;; scheduler as data. could do C pointers this way too.
@@ -516,10 +534,10 @@ out."
                   (at time
                       (lambda () (output object :to *rts-out*)))))))
 
-    (unless (eql flag 0)
-      (case flag
-        ((1) (error "enqueue: no room in scheduler for ~S." object))
-        ((2) (error "enqueue: RTS not running."))))
+    #+(or)(unless (eql flag 0)
+            (case flag
+              ((1) (error "enqueue: no room in scheduler for ~S." object))
+              ((2) (error "enqueue: RTS not running."))))
     (values)))
 
 

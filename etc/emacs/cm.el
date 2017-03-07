@@ -660,5 +660,5 @@ selected; indent whole defun if prefixed."
  )
 
 ;; eof
-
+(enable-cm-commands)
 (provide 'cm)
