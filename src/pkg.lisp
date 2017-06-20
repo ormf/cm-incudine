@@ -558,7 +558,10 @@
            :set-sco-output-hook! :set-tuning-base! :shell :shuffle :*softest* :sprout
            :stop :subcontainers :subobjects :sv :sv+ :sv* :*tempo*
            :tendency :thunk :*time-slots* :transpose :transposer :true
-           :tuning :vary :wait :wait-until :weighting)
+           :tuning :vary :wait :wait-until :weighting
+
+           :midi-open-default :*rts-out* :incudine-stream
+           )
   )
 
 

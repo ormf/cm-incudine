@@ -8,8 +8,8 @@
 (defparameter *incudine-default-filter* 0)
 (defparameter *incudine-default-mask* 0)
 
-(defvar *midi-in* nil)
-(defvar *midi-out* nil)
+(defvar *midi-in1* nil)
+(defvar *midi-out1* nil)
 (defvar *osc-in* nil)
 (defvar *osc-out* nil)
 (defvar *fudi-in* nil)
@@ -18,29 +18,34 @@
 
 (declaim (special *osc-out*))
 
+;;; add jackmidi stream structs to the special targets of the 'events
+;;; function:
+
+(push (list #'typep 'jackmidi:stream) *special-event-streams*)
+
 (progn
- (defclass incudine-stream (rt-stream midi-stream-mixin)
-           ((input :initform *incudine-default-input* :initarg :input
-             :accessor incudine-input)
-            (output :initform *incudine-default-output* :initarg
-             :output :accessor incudine-output)
-            (latency :initform *incudine-default-latency* :initarg
-             :latency :accessor rt-stream-latency)
-            (inbufsize :initform *incudine-default-inbuf-size*
-             :initarg :inbuf-size :accessor incudine-inbuf-size)
-            (outbufsize :initform *incudine-default-outbuf-size*
-             :initarg :outbuf-size :accessor incudine-outbuf-size)
-            (receive-data :initform (list nil nil nil nil) :accessor
-             rt-stream-receive-data)
-            (receive-mode :initform :message :initarg :receive-mode
-             :accessor rt-stream-receive-mode)
-            (filter :initform *incudine-default-filter* :initarg
-             :filter :accessor incudine-filter)
-            (mask :initform *incudine-default-mask* :initarg
-             :channel-mask :accessor incudine-channel-mask)
-            (offset :initform 0 :initarg :offset :accessor
-             incudine-offset))
-           #+metaclasses  (:metaclass io-class))
+(defclass incudine-stream (rt-stream midi-stream-mixin)
+  ((input :initform *incudine-default-input* :initarg :input
+          :accessor incudine-input)
+   (output :initform *incudine-default-output* :initarg
+           :output :accessor incudine-output)
+   (latency :initform *incudine-default-latency* :initarg
+            :latency :accessor rt-stream-latency)
+   (inbufsize :initform *incudine-default-inbuf-size*
+              :initarg :inbuf-size :accessor incudine-inbuf-size)
+   (outbufsize :initform *incudine-default-outbuf-size*
+               :initarg :outbuf-size :accessor incudine-outbuf-size)
+   (receive-data :initform (list nil nil nil nil) :accessor
+                 rt-stream-receive-data)
+   (receive-mode :initform :message :initarg :receive-mode
+                 :accessor rt-stream-receive-mode)
+   (filter :initform *incudine-default-filter* :initarg
+           :filter :accessor incudine-filter)
+   (mask :initform *incudine-default-mask* :initarg
+         :channel-mask :accessor incudine-channel-mask)
+   (offset :initform 0 :initarg :offset :accessor
+           incudine-offset))
+  #+metaclasses  (:metaclass io-class))
  (defparameter <incudine-stream> (find-class 'incudine-stream))
  (finalize-class <incudine-stream>)
  (setf (io-class-file-types <incudine-stream>) '("*.ic"))
@@ -96,27 +101,28 @@
   (if (or (member :inout args)
           (member :input args)
           (not args))
-      (if *midi-in*
+      (if *midi-in1*
           (progn
-            (jackmidi:close *midi-in*)
-            (setf *midi-in* nil))))
+            (jackmidi:close *midi-in1*)
+            (setf *midi-in1* nil))))
   (if (or (member :inout args)
           (member :output args)
           (not args))
-      (if *midi-out*
+      (if *midi-out1*
           (progn
-            (jackmidi:close *midi-out*)
-            (setf *midi-out* nil)))))
+            (jackmidi:close *midi-out1*)
+            (setf *midi-out1* nil)))))
 
 (defun midi-open-default (&key (direction :input))
   (case direction
     (:output
      (progn
        (midi-close-default :output)
-       (setf *midi-out* (jackmidi:open :direction :output))))
+       (setf *midi-out1* (jackmidi:open :direction :output :port-name "midi_out-1"))))
     (t (progn
          (midi-close-default :input)
-         (setf *midi-in* (jackmidi:open :direction :input))))))
+         (setf *midi-in1* (jackmidi:open :direction :input
+                                         :port-name "midi_in-1"))))))
 
 (defun incudine-open (&rest args)
   (apply #'open-io "incudine-rts.ic" t args))
@@ -457,7 +463,7 @@
 (defmethod stream-receive-start ((stream jackmidi:input-stream) args)
   args
   (if (incudine::receiver-status
-           (incudine::receiver *midi-in*))
+           (incudine::receiver *midi-in1*))
       T
       (incudine:recv-start stream)))
 
@@ -790,3 +796,4 @@
 
 (defun rts-thread? () nil)
 |#
+

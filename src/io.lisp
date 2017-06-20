@@ -244,13 +244,21 @@ of the io stream. Returns the io stream."
   (setf *out* stream)
   stream)
 
+(defparameter *special-event-streams*
+  `((,#'stringp) (,#'null) (,#'typep ,<object>))
+  "extendable list of special targets of the events function.")
+
+(defun special-evt-stream? (first-arg)
+  (loop
+     for (fn . args) in *special-event-streams*
+     for res = (apply fn first-arg args)
+     until res finally (return res)))
+
 (defun events (object &rest args)
   (let* ((to
           (if
            (and (consp args)
-                (or (stringp (car args)) (eq (car args) nil)
-                    (typep (car args) <object>)
-                    (typep (car args) 'jackmidi:stream)))
+                (special-evt-stream? (first args)))
            (pop args) (current-output-stream)))
          (ahead
           (if

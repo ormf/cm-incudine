@@ -145,7 +145,7 @@
   ;; 1 stroke switching between repl and last editing buffer
   (global-set-key (kbd "<f8>") 'slime-toggle-repl)
   ;; eval before at or after point, region, or whole defun on whitespae
-  (define-key slime-mode-map (kbd "\C-x\C-e") 'slime-eval-expr)
+  (define-key slime-mode-map (kbd "\C-x\C-e") 'slime-eval-last-expression)
   ;; indent line or region
   (define-key slime-mode-map (kbd "TAB") 'slime-indent-anything)
   ;; lookup cm function at point

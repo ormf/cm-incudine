@@ -478,3 +478,6 @@
          (j beg (+ j 1)))
         ((= j end) sub)
       (u8vector-set! sub i (u8vector-ref vec j)))))
+
+(defun bpm->usecs (bpm)
+  (round (* (/ 60 bpm) 1000000)))
