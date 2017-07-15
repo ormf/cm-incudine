@@ -10,13 +10,12 @@
                #:cm
                #:fudi)
   :serial t
-  :components ((:file "package")
-               (:file "cm-incudine")
-               (:file "incudine")
-               (:file "incudine-rts")
-               (:file "rt")
-               (:file "osc")
-               (:file "fudi")
-               (:file "jackmidi")
-               ))
-
+  :components (:module "src"
+                       :components ((:file "package")
+                                    (:file "cm-incudine")
+                                    (:file "incudine")
+                                    (:file "incudine-rts")
+                                    (:file "rt")
+                                    (:file "osc")
+                                    (:file "fudi")
+                                    (:file "jackmidi"))))
