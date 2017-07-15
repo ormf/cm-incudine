@@ -1,0 +1,18 @@
+(ql:quickload "cm-incudine")
+;;; enter common music:
+
+(cm)
+
+;;; start incudine's realtime scheduler
+
+(rts)
+
+;;; open jack midi output
+
+(midi-open-default :direction :output)
+
+;;; after connecting a midi device via qjackctl
+
+(sprout (new midi :time 0))
+
+(fudi-open-default :direction :output)
