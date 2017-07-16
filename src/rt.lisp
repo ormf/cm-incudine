@@ -47,7 +47,7 @@
 
 (defun rts (&rest args)
   (declare (ignore args))
-  (unless *rts-out* (new incudine-stream))
+  (unless *rts-out* (setf *rts-out* (new incudine-stream)))
   (incudine:rt-start))
 
 (defun rts? (&optional arg)
