@@ -122,11 +122,12 @@
 ;;    (format t "~a~%" scoretime)
 ;;    (break "write-event (midi): ~a~%~a~%" obj str)
     (multiple-value-bind (keyn ampl)
-        (incudine-ensure-velocity (midi-keynum obj) (midi-amplitude obj))
+        (incudine-ensure-velocity (float (midi-keynum obj)) (midi-amplitude obj))
       (declare (type (integer 0 127) ampl))
       (let ((time (+ (rts-now) scoretime)))
         (multiple-value-bind (keyn chan)
-            (incudine-ensure-microtuning keyn (midi-channel obj) stream str
+            (incudine-ensure-microtuning (coerce keyn 'single-float)
+                                         (midi-channel obj) stream str
                                          ;; pitch bend before the note
                                          (- time 1e-5))
           (declare (type (signed-byte 8) keyn chan))
@@ -186,7 +187,7 @@
 
 (defun incudine-ensure-microtuning (keyn chan stream incudine-stream time)
   "return values keynum and chan according to tuning specs in stream."
-  (declare (type (or fixnum single-float symbol) keyn)
+  (declare (type (or fixnum single-float double-float symbol) keyn)
            (type (integer 0 15) chan)
            (type jackmidi:output-stream stream)
            (type incudine-stream incudine-stream)
