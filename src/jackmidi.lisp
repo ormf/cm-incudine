@@ -122,7 +122,7 @@
 ;;    (format t "~a~%" scoretime)
 ;;    (break "write-event (midi): ~a~%~a~%" obj str)
     (multiple-value-bind (keyn ampl)
-        (incudine-ensure-velocity (float (midi-keynum obj)) (midi-amplitude obj))
+        (incudine-ensure-velocity (float (keynum (midi-keynum obj))) (midi-amplitude obj))
       (declare (type (integer 0 127) ampl))
       (let ((time (+ (rts-now) scoretime)))
         (multiple-value-bind (keyn chan)
