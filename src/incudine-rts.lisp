@@ -209,39 +209,23 @@
     ((obj midi-program-change) (str incudine-stream) scoretime)
   (alexandria:if-let (stream (or (incudine-output str) (jackmidi-output-stream)))
 ;;    (break "write-event (midi-program-change): ~a" obj)
-    (typecase obj
-      (midi-channel-event
-       (let* ((dat (midi-stream-tunedata str)))
-         (destructuring-bind (offs num)
-             (cond
-                ((or (null dat) (eq (first dat) t))
-                 (list (midi-event-channel obj) 1))
-                (t dat))
-           (dotimes (i num)
-             (at (+ (rts-now) scoretime)
-                 (midi-out
-                  stream
-                  (logior (ash (midi-event-opcode obj) 4) (+ i offs))
-                  (midi-event-data1 obj) (or (midi-event-data2 obj) 0) 3)))))))))
-
-  (alexandria:if-let (stream (or (incudine-output str) (jackmidi-output-stream)))
-;;    (format t "~a~%" scoretime)
-    (let ((time (+ (rts-now) scoretime))
-          )
-      (declare (ignore time))
-;;;      (break "write-event (pgm-change): ~a~%~a~%~a~%" obj str (midi-stream-tunedata str))
-      (cond ((or (null dat) (eq (first dat) t))
-             (pgm-change stream (sv obj program) (sv obj channel)))
-            (t (dotimes (i (second dat))
-                 (pgm-change stream (sv obj program) (+ (first dat) i))))))
-    (values))
-
-
+    (let* ((dat (midi-stream-tunedata str)))
+      (destructuring-bind (offs num)
+          (cond
+            ((or (null dat) (eq (first dat) t))
+             (list (midi-event-channel obj) 1))
+            (t dat))
+        (dotimes (i num)
+          (at (+ (rts-now) scoretime)
+              (midi-out
+               stream
+               (logior (ash (midi-event-opcode obj) 4) (+ i offs))
+               (midi-event-data1 obj) (or (midi-event-data2 obj) 0) 3)))))))
 
 (defmethod write-event
     ((obj midi-event) (str incudine-stream) scoretime)
   (alexandria:if-let (stream (or (incudine-output str) (jackmidi-output-stream)))
-    (break "write-event (midi-event): ~a" obj)
+;;    (break "write-event (midi-event): ~a" obj)
     (typecase obj
          (midi-channel-event
           (at (+ (rts-now) scoretime)
