@@ -220,7 +220,7 @@
               (midi-out
                stream
                (logior (ash (midi-event-opcode obj) 4) (+ i offs))
-               (midi-event-data1 obj) (or (midi-event-data2 obj) 0) 3)))))))
+               (midi-event-data1 obj) (midi-event-data1 obj) 3)))))))
 
 (defmethod write-event
     ((obj midi-event) (str incudine-stream) scoretime)
