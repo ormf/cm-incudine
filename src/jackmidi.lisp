@@ -17,8 +17,35 @@
 
 (in-package :cm)
 
+(defconstant +ml-opcode-mask+ #xf0)
+(defconstant +ml-channel-mask+ #x0f)
 (defparameter *midi-in1* nil)
 (defparameter *midi-out1* nil)
+(defparameter *stream-recv-responders* (make-hash-table))
+(defparameter  *jackmidi-rcv-type-dummy* nil)
+(defparameter  *jackmidi-obj-name-dummy* nil)
+
+(defparameter *ml-opcodes*
+  `((,+ml-control-change-opcode+ . :cc)
+    (,+ml-note-off-opcode+ . :note-on)
+    (,+ml-note-on-opcode+ . :note-off)
+    (,+ml-program-change-opcode+ . :pgm-change)
+    (,+ml-pitch-bend-opcode+ . :pitch-bend)
+    (,+ml-key-pressure-opcode+ . :key-pressure)
+    (,+ml-channel-pressure-opcode+ . :channel-pressure)))
+
+
+(defun status->opcode (st)
+  (cdr (assoc (ash (logand st +ml-opcode-mask+) -4)
+              *ml-opcodes*)))
+
+(defun status->channel (st)
+  (logand st +ml-channel-mask+))
+
+(defun make-mm-mask (opcode channels)
+  "make a mask using midi opcode and channel mask for midi input
+filtering."
+  (+ (ash opcode 4) channels))
 
 ;;; add jackmidi stream structs to the special targets of the 'events
 ;;; function:
@@ -139,11 +166,11 @@
 
 ;;; dummy method to make set-receiver! happy
 (defmethod rt-stream-receive-type ((stream jackmidi:input-stream))
-  nil)
+  *jackmidi-rcv-type-dummy*)
 
 ;;; dummy method to make set-receiver! happy
 (defmethod object-name ((stream jackmidi:input-stream))
-  stream)
+  *jackmidi-obj-name-dummy*)
 
 (defmethod rt-stream-receive-data ((stream jackmidi:input-stream))
   (declare (ignore stream))
@@ -154,16 +181,43 @@
       (progn
         (incudine:remove-responder (gethash stream *stream-recv-responders*))
         (remhash stream *stream-recv-responders*)))
-  (let* ((mask (getf args :mask #xffffffff))
+  (let* ((mask (getf args :mask #xffff))
          (responder (incudine:make-responder
                      stream
                      (lambda (st d1 d2)
-                       (if (/= 0 (logand (ash 1 (+ 16 (ash st -4))) mask)) ;;; emulate portmidi input filtering
+                       (if (/= 0 (logand st mask)) ;;; input filtering
                            (let* ((opcode (ash (logand st +ml-opcode-mask+) -4))
                                   (channel (logand st +ml-channel-mask+))
                                   (mm (make-channel-message opcode channel d1 d2))
                                   (ms (time->ms (now))))
-                             (funcall hook mm ms)))))))
+                             (funcall hook st d1 d2)))))))
+    (if responder
+        (setf (gethash stream *stream-recv-responders*) responder)
+        (error "~a: Couldn't add responder!" stream)))
+  (values))
+
+(defmethod stream-receive-init ((stream jackmidi:input-stream) hook args)
+  (if (gethash stream *stream-recv-responders*)
+      (progn
+        (incudine:remove-responder (gethash stream *stream-recv-responders*))
+        (remhash stream *stream-recv-responders*)))
+  (let* ((mask (getf args :mask #xffff))
+         (format (getf args :format :mm))
+         (responder (case format
+                      (:raw
+                       (incudine:make-responder
+                        stream
+                        (lambda (st d1 d2)
+                          (funcall hook st d1 d2))))
+                      (:mm
+                       (incudine:make-responder
+                        stream
+                        (lambda (st d1 d2) 
+                          (let* ((opcode (ash (logand st +ml-opcode-mask+) -4))
+                                 (channel (logand st +ml-channel-mask+))
+                                 (mm (make-channel-message opcode channel d1 d2))
+                                 (ms (time->ms (now))))
+                            (funcall hook mm ms))))))))
     (if responder
         (setf (gethash stream *stream-recv-responders*) responder)
         (error "~a: Couldn't add responder!" stream)))
