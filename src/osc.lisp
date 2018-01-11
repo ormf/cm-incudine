@@ -86,7 +86,7 @@ to *osc-out*."
              do (incudine.osc::set-value stream i val))
           (incudine.osc:send stream)))))
 
-(defun osc::send-osc (stream address types &rest values)
+(defun incudine.osc::send-osc (stream address types &rest values)
   "Send a OSC message with OSC ADDRESS, OSC TYPES and arbitrary VALUES
 To a specifiable stream."
   (incudine.osc:start-message stream address types)
@@ -102,19 +102,13 @@ To a specifiable stream."
              collect `(incudine.osc::set-value ,stream ,i ,val))
      (incudine.osc:send ,stream)))
 
-(defun cm-send-osc (stream address types &rest values)
-  "Send a OSC message with OSC ADDRESS, OSC TYPES and arbitrary VALUES."
-  (incudine.osc::start-message stream address types)
-  (loop for val in values
-     for i from 0
-       do (incudine.osc::set-value stream i val))
-  (incudine.osc::send stream))
+
 
 (defmethod write-event ((obj osc) (str incudine-stream) scoretime)
   (alexandria:if-let (stream (osc-output-stream))
 ;;    (format t "scoretime: ~a~%" scoretime)
     (at (+ (rts-now) scoretime)
-                 (lambda () (apply #'cm-send-osc stream (osc-path obj)
+                 (lambda () (apply #'incudine.osc::send-osc stream (osc-path obj)
                               (osc-types obj)
                               (let ((msg (osc-msg obj)))
                                 (if (consp msg) msg (list msg)))))))
