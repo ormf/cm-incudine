@@ -8,7 +8,7 @@
    *stream-recv-responders*
    *jackmidi-rcv-type-dummy*
    *jackmidi-obj-name-dummy*
-   status->opcodex1
+   status->opcode
    status->channel
    make-mm-mask
    ))
