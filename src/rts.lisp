@@ -132,11 +132,11 @@
 
 (defun rts ()
   (unless *rts-out* (setf *rts-out* (new incudine-stream)))
-  (incudine:rt-start))
+  (incudine:rt-start)
+  (midi-open-default :direction :input)
+  (midi-open-default :direction :output))
 
 (export '(*rts-out*
           samps->time time->samps secs->samps samps->secs at amp->velo
-          write-event rts-enqueue rts)
+          write-event set-receiver! rts-enqueue rts)
         :cm)
-
-

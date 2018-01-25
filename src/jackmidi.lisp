@@ -77,16 +77,16 @@ filtering."
             (jackmidi:close *midi-out1*)
             (setf *midi-out1* nil)))))
 
-(defun midi-open-default (&key (direction :input))
+(defun midi-open-default (&key (direction :input) (port-name "midi_out-1"))
   (case direction
     (:output
      (progn
        (midi-close-default :output)
-       (setf *midi-out1* (jackmidi:open :direction :output :port-name "midi_out-1"))))
+       (setf *midi-out1* (jackmidi:open :direction :output :port-name port-name))))
     (t (progn
          (midi-close-default :input)
          (setf *midi-in1* (jackmidi:open :direction :input
-                                         :port-name "midi_in-1"))))))
+                                         :port-name port-name))))))
 
 (defun jackmidi-input-stream ()
   (unless (zerop (length jackmidi::*output-streams*))
