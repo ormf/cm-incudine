@@ -48,6 +48,8 @@
 (defun rts (&rest args)
   (declare (ignore args))
   (unless *rts-out* (setf *rts-out* (new incudine-stream)))
+  (midi-open-default :direction :input)
+  (midi-open-default :direction :output)
   (incudine:rt-start))
 
 (defun rts? (&optional arg)

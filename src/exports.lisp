@@ -11,4 +11,5 @@
    status->opcode
    status->channel
    make-mm-mask
+   set-receiver!
    ))
