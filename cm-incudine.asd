@@ -19,4 +19,5 @@
                                       (:file "osc")
                                       (:file "fudi")
                                       (:file "jackmidi")
+                                      (:file "io")
                                       (:file "exports")))))
