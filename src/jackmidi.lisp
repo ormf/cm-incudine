@@ -145,16 +145,16 @@ filtering."
 
 (defmethod write-event ((obj midi) (str incudine-stream) scoretime)
   (declare (type (or fixnum float) scoretime))
-  (alexandria:if-let (stream (or (incudine-output str) (jackmidi-output-stream)))
+  (alexandria:if-let (stream (incudine-output str))
 ;;    (format t "~a~%" scoretime)
 ;;    (break "write-event (midi): ~a~%~a~%" obj str)
     (multiple-value-bind (keyn ampl)
-        (incudine-ensure-velocity (float (keynum (midi-keynum obj))) (midi-amplitude obj))
+        (incudine-ensure-velocity (keynum (midi-keynum obj)) (float (midi-amplitude obj)))
       (declare (type (integer 0 127) ampl))
       (let ((time (+ (rts-now) scoretime)))
         (multiple-value-bind (keyn chan)
             (incudine-ensure-microtuning (coerce keyn 'single-float)
-                                         (midi-channel obj) stream str
+                                         (midi-channel obj) str
                                          ;; pitch bend before the note
                                          (- time 1e-5))
           (declare (type (signed-byte 8) keyn chan))
@@ -162,6 +162,23 @@ filtering."
             (midi-note stream time keyn
                        (the (or fixnum single-float) (midi-duration obj))
                        ampl chan))))
+      (values))))
+
+(defmethod write-event ((obj midi) (str jackmidi:output-stream) scoretime)
+  (declare (type (or fixnum float) scoretime))
+  (alexandria:if-let (stream (incudine-output str))
+;;    (format t "~a~%" scoretime)
+;;    (break "write-event (midi): ~a~%~a~%" obj str)
+    (multiple-value-bind (keyn ampl)
+        (incudine-ensure-velocity (floor (midi-keynum obj)) (float (midi-amplitude obj)))
+      (declare (type (integer 0 127) ampl))
+      (let ((time (+ (rts-now) scoretime)))
+        (with-slots (duration channel) obj
+          (declare (type (signed-byte 8) keyn channel))
+          (unless (< keyn 0)
+            (midi-note stream time keyn
+                       (the (or fixnum single-float) duration)
+                       ampl channel))))
       (values))))
 
 ;;; dummy method to make set-receiver! happy
@@ -239,12 +256,11 @@ filtering."
       (error "~a: Couldn't remove responder!" stream)
       (remhash stream *stream-recv-responders*)))
 
-(defun incudine-ensure-microtuning (keyn chan stream incudine-stream time)
+(defun incudine-ensure-microtuning (keyn chan stream time)
   "return values keynum and chan according to tuning specs in stream."
   (declare (type (or fixnum single-float double-float symbol) keyn)
            (type (integer 0 15) chan)
            (type jackmidi:output-stream stream)
-           (type incudine-stream incudine-stream)
            (type incudine.util:sample time)
            (optimize speed))
   (flet ((truncate-float (k &optional round-p)
@@ -258,7 +274,7 @@ filtering."
             ((and keyn (symbolp keyn))
              (setf keyn (keynum keyn)))
             ((numberp keyn)
-             (setf dat (midi-stream-tunedata incudine-stream))
+             (setf dat (midi-stream-tunedata stream))
              (cond ((null dat)
                     (setf keyn (truncate-float keyn t)))
                    ((eq (first dat) t)

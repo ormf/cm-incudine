@@ -57,6 +57,9 @@
  (setf (io-class-file-types <incudine-stream>) '("*.ic"))
  (values))
 
+(defmethod incudine-output ((obj jackmidi:output-stream))
+  obj)
+
 (defmethod print-object ((obj incudine-stream) port)
            (let ((name (object-name obj))
                  (pids (event-stream-stream obj))
