@@ -1,7 +1,7 @@
 "cm-incudine" extends common music 2 (the common lisp port of common
 music) with realtime capabilities using the "incudine" realtime system
-by Tito Latini. Currently realtime midi, FUDI and any function call
-are supported. Note: incudine currently only works with sbcl.
+by Tito Latini. Currently realtime midi, FUDI, OSC and any function
+call are supported. Note: incudine currently only works with sbcl.
 
 The package depends on
 
@@ -16,7 +16,7 @@ well.
 
 Realtime processes can be invoked by either using the events function
 to an <incudine-stream> or the sprout function. The processes now also
-supports realtime fudi messages in addition to osc and midi
+support realtime fudi messages in addition to osc and midi
 messages. To get this done first get the prerequisites:
 
 - [incudine](http://incudine.sourceforge.net/)
@@ -45,8 +45,8 @@ Then start sbcl and evaluate the following:
   (setf *rts-out* *out*))
 ```
 Now you can send realtime midi messages to jackmidi output, tcp
-messages to pd listening on port 3003, or osc messages with udp to
-port 3012 like this:
+messages to pd listening on port 3012, or osc messages with udp to
+port 3003 like this:
 ```cl
 (events (new midi :time 0 :keynum 60 :duration 1) *rts-out*)
 

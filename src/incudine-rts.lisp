@@ -227,8 +227,8 @@
 
 (defmethod write-event
     ((obj midi-event) (str incudine-stream) scoretime)
-  (alexandria:if-let (stream (or (incudine-output str) (jackmidi-output-stream)))
-;;    (break "write-event (midi-event): ~a" obj)
+  (alexandria:if-let (stream (incudine-output str))
+    (break "write-event (midi-event): ~a" obj)
     (typecase obj
          (midi-channel-event
           (at (+ (rts-now) scoretime)
@@ -237,10 +237,22 @@
                  stream
                  (logior (ash (midi-event-opcode obj) 4) (midi-event-channel obj))
                  (midi-event-data1 obj) (or (midi-event-data2 obj) 0) 3)))))))
+
+(defmethod write-event
+    ((obj midi-event) (stream jackmidi:output-stream) scoretime)
+  (break "write-event (midi-event): ~a" obj)
+  (typecase obj
+    (midi-channel-event
+     (at (+ (rts-now) scoretime)
+         (progn
+           (midi-out
+            stream
+            (logior (ash (midi-event-opcode obj) 4) (midi-event-channel obj))
+            (midi-event-data1 obj) (or (midi-event-data2 obj) 0) 3))))))
 ;; (midi-write-message (midi-event->midi-message obj) str scoretime nil)
 
 (defmethod write-event ((obj integer) (str incudine-stream) scoretime)
-  (alexandria:if-let (stream (or (incudine-output str) (jackmidi-output-stream)))
+  (alexandria:if-let (stream (incudine-output str))
     (at (+ (rts-now) scoretime)
                      (midi-out
                       stream
@@ -251,8 +263,25 @@
                       (channel-message-data2 obj)
                       3))))
 
+(defmethod write-event ((obj integer) (stream jackmidi:output-stream) scoretime)
+  (at (+ (rts-now) scoretime)
+      (midi-out
+       stream
+       (logior
+        (ash (channel-message-opcode obj) 4)
+        (channel-message-channel obj))
+       (channel-message-data1 obj)
+       (channel-message-data2 obj)
+       3)))
+
 
 (defmethod write-event ((obj function) (str incudine-stream) scoretime)
+  (declare (ignore str))
+;;  (break "write-event (fn): ~a" obj)
+  (at (+ (rts-now) scoretime) obj)
+  (values))
+
+(defmethod write-event ((obj function) (str jackmidi:output-stream) scoretime)
   (declare (ignore str))
 ;;  (break "write-event (fn): ~a" obj)
   (at (+ (rts-now) scoretime) obj)

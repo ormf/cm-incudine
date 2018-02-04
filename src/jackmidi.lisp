@@ -82,11 +82,13 @@ filtering."
     (:output
      (progn
        (midi-close-default :output)
-       (setf *midi-out1* (jackmidi:open :direction :output :port-name (if portname portname "midi_out-1")))))
+       (setf *midi-out1* (jackmidi:open :direction :output :port-name (if portname portname "midi_out-1")))
+       (if *rts-out* (setf (incudine-output *rts-out*) *midi-out1*))))
     (t (progn
          (midi-close-default :input)
          (setf *midi-in1* (jackmidi:open :direction :input
-                                         :port-name (if portname portname "midi_in-1")))))))
+                                         :port-name (if portname portname "midi_in-1")))
+         (if *rts-in* (setf (incudine-input *rts-out*) *midi-in1*))))))
 
 (defun jackmidi-input-stream ()
   (unless (zerop (length jackmidi::*output-streams*))
@@ -147,9 +149,8 @@ filtering."
   (declare (type (or fixnum float) scoretime))
   (alexandria:if-let (stream (incudine-output str))
 ;;    (format t "~a~%" scoretime)
-;;    (break "write-event (midi): ~a~%~a~%" obj str)
     (multiple-value-bind (keyn ampl)
-        (incudine-ensure-velocity (keynum (midi-keynum obj)) (float (midi-amplitude obj)))
+        (incudine-ensure-velocity (floor (midi-keynum obj)) (float (midi-amplitude obj)))
       (declare (type (integer 0 127) ampl))
       (let ((time (+ (rts-now) scoretime)))
         (multiple-value-bind (keyn chan)
@@ -160,7 +161,7 @@ filtering."
           (declare (type (signed-byte 8) keyn chan))
           (unless (< keyn 0)
             (midi-note stream time keyn
-                       (the (or fixnum single-float) (midi-duration obj))
+                       (the (or fixnum single-float) (float (midi-duration obj)))
                        ampl chan))))
       (values))))
 
@@ -177,7 +178,7 @@ filtering."
           (declare (type (signed-byte 8) keyn channel))
           (unless (< keyn 0)
             (midi-note stream time keyn
-                       (the (or fixnum single-float) duration)
+                       (the (or fixnum single-float) (float duration))
                        ampl channel))))
       (values))))
 
