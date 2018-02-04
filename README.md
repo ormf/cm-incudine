@@ -15,7 +15,7 @@ there, code evaluation should take place within the "cm" package as
 well.
 
 Realtime processes can be invoked by either using the events function
-to an <incudine-stream> or the sprout function. The processes now also
+to an incudine-stream or the sprout function. The processes now also
 support realtime fudi messages in addition to osc and midi
 messages. To get this done first get the prerequisites:
 
