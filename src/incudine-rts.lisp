@@ -240,7 +240,7 @@
 
 (defmethod write-event
     ((obj midi-event) (stream jackmidi:output-stream) scoretime)
-  (break "write-event (midi-event): ~a" obj)
+;;;  (break "write-event (midi-event): ~a" obj)
   (typecase obj
     (midi-channel-event
      (at (+ (rts-now) scoretime)

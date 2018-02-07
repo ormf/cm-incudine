@@ -47,10 +47,10 @@
 
 (defun rts (&rest args)
   (declare (ignore args))
-  (unless *rts-out* (setf *rts-out* (new incudine-stream)))
+  (incudine:rt-start)
   (midi-open-default :direction :input)
   (midi-open-default :direction :output)
-  (incudine:rt-start))
+  (setf *rts-out* (new incudine-stream :input *midi-in1* :output *midi-out1*)))
 
 (defun rts? (&optional arg)
   (declare (ignore arg))

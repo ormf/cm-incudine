@@ -88,7 +88,7 @@ filtering."
          (midi-close-default :input)
          (setf *midi-in1* (jackmidi:open :direction :input
                                          :port-name (if portname portname "midi_in-1")))
-         (if *rts-in* (setf (incudine-input *rts-out*) *midi-in1*))))))
+         (if *rts-out* (setf (incudine-input *rts-out*) *midi-in1*))))))
 
 (defun jackmidi-input-stream ()
   (unless (zerop (length jackmidi::*output-streams*))
