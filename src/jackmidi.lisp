@@ -149,8 +149,9 @@ filtering."
   (declare (type (or fixnum float) scoretime))
   (alexandria:if-let (stream (incudine-output str))
 ;;    (format t "~a~%" scoretime)
+;;    (break "write-event (incudine-stream):")
     (multiple-value-bind (keyn ampl)
-        (incudine-ensure-velocity (floor (midi-keynum obj)) (float (midi-amplitude obj)))
+        (incudine-ensure-velocity (midi-keynum obj) (float (midi-amplitude obj)))
       (declare (type (integer 0 127) ampl))
       (let ((time (+ (rts-now) scoretime)))
         (multiple-value-bind (keyn chan)
@@ -159,6 +160,7 @@ filtering."
                                          ;; pitch bend before the note
                                          (- time 1e-5))
           (declare (type (signed-byte 8) keyn chan))
+          (format t "~a, ~a~%" keyn chan)
           (unless (< keyn 0)
             (midi-note stream time keyn
                        (the (or fixnum single-float) (float (midi-duration obj)))

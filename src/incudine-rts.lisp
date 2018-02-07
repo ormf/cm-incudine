@@ -228,7 +228,7 @@
 (defmethod write-event
     ((obj midi-event) (str incudine-stream) scoretime)
   (alexandria:if-let (stream (incudine-output str))
-    (break "write-event (midi-event): ~a" obj)
+;;;    (break "write-event (midi-event): ~a" obj)
     (typecase obj
          (midi-channel-event
           (at (+ (rts-now) scoretime)
