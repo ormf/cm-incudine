@@ -160,7 +160,6 @@ filtering."
                                          ;; pitch bend before the note
                                          (- time 1e-5))
           (declare (type (signed-byte 8) keyn chan))
-          (format t "~a, ~a~%" keyn chan)
           (unless (< keyn 0)
             (midi-note stream time keyn
                        (the (or fixnum single-float) (float (midi-duration obj)))
