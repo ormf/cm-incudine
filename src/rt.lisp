@@ -47,6 +47,7 @@
 
 (defun rts (&rest args)
   (declare (ignore args))
+  (cm)
   (incudine:rt-start)
   (midi-open-default :direction :input)
   (midi-open-default :direction :output)
