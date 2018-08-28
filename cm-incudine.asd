@@ -12,12 +12,13 @@
                #:fudi)
   :serial t
   :components ((:module "src"
-                         :serial t
-                         :components ((:file "incudine")
-                                      (:file "incudine-rts")
-                                      (:file "rt")
-                                      (:file "osc")
-                                      (:file "fudi")
-                                      (:file "jackmidi")
-                                      (:file "io")
-                                      (:file "exports")))))
+                :serial t
+                :components ((:file "package")
+                             (:file "incudine")
+                             (:file "incudine-rts")
+                             (:file "rt")
+                             (:file "osc")
+                             (:file "fudi")
+                             (:file "jackmidi")
+                             (:file "io")
+                             (:file "exports")))))
