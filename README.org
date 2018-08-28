@@ -124,18 +124,16 @@
          output (new fudi :time (now) :message '(1 2 3 4))
          wait 1))
 
-     (sprout
-        (process
-          repeat 2
-          output (new osc :time (now) :types "iiii" :message '(1 2 3 4))
-          wait 1))
     #+END_SRC
 
     Receiving FUDI also works after opening the respective stream with 
 
     #+BEGIN_SRC lisp
-     (osc-open-default :host "127.0.0.1" :port 3004 :direction :input)
+     (fudi-open-default :host "127.0.0.1" :port 3011 :direction :input)
     #+END_SRC
+
+    #+RESULTS:
+    : #<FUDI:INPUT-STREAM :TCP "127.0.0.1" 3011>
 
     Please refer to the common music docs for handling input events
     and establishing receivers.
