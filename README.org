@@ -1,9 +1,9 @@
 * cm-incudine
 ** Overview
-   "cm-incudine" extends common music 2 (the common lisp port of
-   common music) with realtime capabilities using the "incudine"
-   realtime system by Tito Latini. Currently realtime midi, FUDI, OSC
-   and any function call are supported. Note: incudine currently only
+   /cm-incudine/ extends common music 2 (the common lisp port of
+   common music) with realtime capabilities using the [[http://incudine.sourceforge.net/][incudine]]
+   realtime system by Tito Latini. Currently realtime MIDI, FUDI, OSC
+   and any function call are supported. Note: [[http://incudine.sourceforge.net/][incudine]] currently only
    works with [[http://www.sbcl.org/][sbcl]] and a working [[http://jackaudio.org/][JACK]] setup.
 
    The Common Lisp package depends on
@@ -13,14 +13,14 @@
    - [[https://github.com/ormf/cm][cm]]
    - [[https://github.com/ormf/cm-incudine][cm-incudine]]
 
-   As all the code is evaluated within the "cm" package and exported
-   from there, code evaluation should take place within the "cm"
+   As all the code is evaluated within the =:cm= package and exported
+   from there, code evaluation should take place within the =:cm=
    package as well.
 
    Realtime processes can be invoked by either using the =events=
    function with an incudine-stream or =*rts-out*= as second argument
    or the =sprout= function. The processes now also support realtime
-   fudi messages in addition to osc and midi messages.
+   FUDI messages in addition to OSC and MIDI messages.
 ** License
    #+BEGIN_SRC
    **********************************************************************
@@ -69,15 +69,15 @@
    #+END_SRC
 
    The last command automatically changes into the =:cm= package,
-   starts the incudine realtime thread, adds audio ports and midi
+   starts the incudine realtime thread, adds audio ports and MIDI
    ports to jack.
 
 *** MIDI Output
 
-   To send realtime midi messages to jackmidi output you can use
+   To send realtime MIDI messages to jackmidi output you can use
    =output=, =events= or =sprout=. Before testing the following code
-   make sure some midi synth is started and connected to the incudine
-   midi-out port (e.e. using the qjackctl program).
+   make sure some MIDI synth is started and connected to the incudine
+   midi-out port (e.g. using the qjackctl program).
 
    #+BEGIN_SRC lisp
      (output (new midi))
@@ -144,7 +144,7 @@
 *** OSC output and input
 
     Sending OSC messages is similar to sending FUDI messages except
-    that osc requires argument type information in addition to the
+    that OSC requires argument type information in addition to the
     message itself.
 
     #+BEGIN_SRC lisp
@@ -175,9 +175,9 @@
     functions which automatically translate from/to the current
     time-format.
 
-    Receiving from fudi, osc and midi streams also works. Please refer to
+    Receiving from FUDI, OSC and MIDI streams also works. Please refer to
     incudine's documentation for information how to set up receivers.
 
-    For other usage examples see the file "src/cm-incudine-examples.lisp".
+    For other usage examples see the file =src/cm-incudine-examples.lisp=.
     
     Orm Finnendahl 2017/18
