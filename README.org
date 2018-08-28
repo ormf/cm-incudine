@@ -103,7 +103,6 @@
         repeat 5
         output (new midi :time (now) :keynum (between 60 71))
         wait 0.5))
-     (cm:rts)
    #+END_SRC
 
 
