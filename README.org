@@ -166,14 +166,11 @@
 *** Miscellaneous
 
     The default time format is :sec but can also be set to :sample or :ms
-    with the function #'set-time-format
+    with the function =set-time-format=.
 
-    The functions #'at and #'now are wrappers for the same incudine
+    The functions =at= and =now= are wrappers for the same incudine
     functions which automatically translate from/to the current
     time-format.
-
-    Receiving from FUDI, OSC and MIDI streams also works. Please refer to
-    incudine's documentation for information how to set up receivers.
 
     For other usage examples see the file =src/cm-incudine-examples.lisp=.
     
