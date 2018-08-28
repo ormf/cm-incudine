@@ -76,8 +76,8 @@
 
    To send realtime MIDI messages to jackmidi output you can use
    =output=, =events= or =sprout=. Before testing the following code
-   make sure some MIDI synth is started and connected to the incudine
-   midi-out port (e.g. using the qjackctl program).
+   make sure some MIDI synth (e.g. [[https://qsynth.sourceforge.io/][QSynth]]) is started and connected to
+   the incudine midi-out port (e.g. using the [[https://qjackctl.sourceforge.io/][QjackCtl]] program).
 
    #+BEGIN_SRC lisp
      (output (new midi))
