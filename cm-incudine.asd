@@ -20,4 +20,5 @@
                                       (:file "fudi")
                                       (:file "jackmidi")
                                       (:file "io")
+                                      (:file "cm-incudine-import")
                                       (:file "exports")))))

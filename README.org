@@ -1,0 +1,181 @@
+* cm-incudine
+** Overview
+   "cm-incudine" extends common music 2 (the common lisp port of
+   common music) with realtime capabilities using the "incudine"
+   realtime system by Tito Latini. Currently realtime midi, FUDI, OSC
+   and any function call are supported. Note: incudine currently only
+   works with sbcl.
+
+   The package depends on
+
+   - cm
+   - incudine
+   - quicklisp (or asdf)
+   - fudi-incudine
+
+   As all the code is evaluated within the "cm" package and exported
+   from there, code evaluation should take place within the "cm"
+   package as well.
+
+   Realtime processes can be invoked by either using the =events=
+   function with an incudine-stream or =*rts-out*= as second argument
+   or the =sprout= function. The processes now also support realtime
+   fudi messages in addition to osc and midi messages.
+** License
+   #+BEGIN_SRC
+   **********************************************************************
+   
+   Copyright (c) 2018 Orm Finnendahl <orm.finnendahl@selma.hfmdk-frankfurt.de>
+   
+   Revision history: See git repository.
+   
+   This program is free software; you can redistribute it and/or
+   modify it under the terms of the Gnu Public License, version 2 or
+   later. See https://www.gnu.org/licenses/gpl-2.0.html for the text
+   of this agreement.
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+   GNU General Public License for more details.
+   
+   **********************************************************************
+  #+END_SRC
+
+** Installation
+
+   First get all components:
+
+   - [[http://incudine.sourceforge.net/][incudine]]
+   - [[https://github.com/ormf/fudi-incudine][fudi-incudine]]
+   - [[https://github.com/ormf/cm][cm]]
+   - [[https://github.com/ormf/cm-incudine][cm-incudine]]
+
+   Using a common lisp with quicklisp installed, copy all the folders
+   of the prerequsites into the local-projects subfolder of your local
+   quicklisp installation folder (default is
+   <home>/quicklisp/local-projects).
+
+** Usage
+
+   Start sbcl and evaluate the following:
+
+   #+BEGIN_SRC lisp
+     (ql:quickload "cm-incudine")
+
+     (cm:rts)
+   #+END_SRC
+
+   The last command automatically changes into the =:cm= package,
+   starts the incudine realtime thread, adds audio ports and midi
+   ports to jack.
+
+*** MIDI Output
+
+   To send realtime midi messages to jackmidi output you can use
+   =output=, =events= or =sprout=. Before testing the following code
+   make sure some midi synth is started and connected to the incudine
+   midi-out port (e.e. using the qjackctl program).
+
+   #+BEGIN_SRC lisp
+     (output (new midi))
+
+     (events
+      (loop for x below 10
+         collect (new midi :time (* x 0.5) :keynum (between 60 71)))
+      ,*rts-out*)
+
+     (sprout
+      (loop for x below 10
+         collect (new midi :time (* x 0.5) :keynum (between 60 71))))
+
+     (events
+      (process
+        repeat 5
+        output (new midi :time (now) :keynum (between 60 71))
+        wait 0.5)
+      ,*rts-out*)
+
+     (sprout
+      (process
+        repeat 5
+        output (new midi :time (now) :keynum (between 60 71))
+        wait 0.5))
+     (cm:rts)
+   #+END_SRC
+
+
+
+
+*** FUDI output and input
+    
+    To send to [[https://en.wikipedia.org/wiki/Pure_Data][Pure Data]], start pd, first create a patch with a
+    [netsend 3012] object and a print object attached to its
+    outlet. Wehen sending to pd watch the messages appearing in pd's
+    post window.
+
+    #+BEGIN_SRC lisp
+      (fudi-open-default :host "127.0.0.1" :port 3012 :direction :output)
+
+      (sprout
+       (process
+         repeat 2
+         output (new fudi :time (now) :message '(1 2 3 4))
+         wait 1))
+
+     (sprout
+        (process
+          repeat 2
+          output (new osc :time (now) :types "iiii" :message '(1 2 3 4))
+          wait 1))
+    #+END_SRC
+
+    Receiving FUDI also works after opening the respective stream with 
+
+    #+BEGIN_SRC lisp
+     (osc-open-default :host "127.0.0.1" :port 3004 :direction :input)
+    #+END_SRC
+
+    Please refer to the common music docs for handling input events
+    and establishing receivers.
+
+*** OSC output and input
+
+    Sending OSC messages is similar to sending FUDI messages except
+    that osc requires argument type information in addition to the
+    message itself.
+
+    #+BEGIN_SRC lisp
+     (osc-open-default :host "127.0.0.1" :port 3003 :direction :output)
+
+     (sprout
+      (process
+        repeat 2
+        output (new osc :time (now) :types "iiii" :message '(1 2 3 4))
+        wait 1))
+    #+END_SRC
+
+    receiving OSC also works after opening the respective stream with 
+
+    #+BEGIN_SRC lisp
+     (osc-open-default :host "127.0.0.1" :port 3004 :direction :input)
+    #+END_SRC
+
+    Please refer to the common music docs for handling input events
+    and establishing receivers.
+
+*** Miscellaneous
+
+    The default time format is :sec but can also be set to :sample or :ms
+    with the function #'set-time-format
+
+    The functions #'at and #'now are wrappers for the same incudine
+    functions which automatically translate from/to the current
+    time-format.
+
+    Receiving from fudi, osc and midi streams also works. Please refer to
+    incudine's documentation for information how to set up receivers.
+
+    For other usage examples see the file "src/cm-incudine-examples.lisp".
+    
+    Orm Finnendahl 2017/18

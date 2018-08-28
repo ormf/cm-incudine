@@ -30,32 +30,32 @@
 
 
 (progn
-(defclass incudine-stream (rt-stream midi-stream-mixin)
-  ((input :initform *incudine-default-input* :initarg :input
-          :accessor incudine-input)
-   (output :initform *incudine-default-output* :initarg
-           :output :accessor incudine-output)
-   (latency :initform *incudine-default-latency* :initarg
-            :latency :accessor rt-stream-latency)
-   (inbufsize :initform *incudine-default-inbuf-size*
-              :initarg :inbuf-size :accessor incudine-inbuf-size)
-   (outbufsize :initform *incudine-default-outbuf-size*
-               :initarg :outbuf-size :accessor incudine-outbuf-size)
-   (receive-data :initform (list nil nil nil nil) :accessor
-                 rt-stream-receive-data)
-   (receive-mode :initform :message :initarg :receive-mode
-                 :accessor rt-stream-receive-mode)
-   (filter :initform *incudine-default-filter* :initarg
-           :filter :accessor incudine-filter)
-   (mask :initform *incudine-default-mask* :initarg
-         :channel-mask :accessor incudine-channel-mask)
-   (offset :initform 0 :initarg :offset :accessor
-           incudine-offset))
-  #+metaclasses  (:metaclass io-class))
- (defparameter <incudine-stream> (find-class 'incudine-stream))
- (finalize-class <incudine-stream>)
- (setf (io-class-file-types <incudine-stream>) '("*.ic"))
- (values))
+  (defclass incudine-stream (rt-stream midi-stream-mixin)
+    ((input :initform *incudine-default-input* :initarg :input
+            :accessor incudine-input)
+     (output :initform *incudine-default-output* :initarg
+             :output :accessor incudine-output)
+     (latency :initform *incudine-default-latency* :initarg
+              :latency :accessor rt-stream-latency)
+     (inbufsize :initform *incudine-default-inbuf-size*
+                :initarg :inbuf-size :accessor incudine-inbuf-size)
+     (outbufsize :initform *incudine-default-outbuf-size*
+                 :initarg :outbuf-size :accessor incudine-outbuf-size)
+     (receive-data :initform (list nil nil nil nil) :accessor
+                   rt-stream-receive-data)
+     (receive-mode :initform :message :initarg :receive-mode
+                   :accessor rt-stream-receive-mode)
+     (filter :initform *incudine-default-filter* :initarg
+             :filter :accessor incudine-filter)
+     (mask :initform *incudine-default-mask* :initarg
+           :channel-mask :accessor incudine-channel-mask)
+     (offset :initform 0 :initarg :offset :accessor
+             incudine-offset))
+    #+metaclasses  (:metaclass io-class))
+  (defparameter <incudine-stream> (find-class 'incudine-stream))
+  (finalize-class <incudine-stream>)
+  (setf (io-class-file-types <incudine-stream>) '("*.ic"))
+  (values))
 
 (defmethod incudine-output ((obj jackmidi:output-stream))
   obj)
