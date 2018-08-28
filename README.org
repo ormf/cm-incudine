@@ -111,7 +111,7 @@
 *** FUDI output and input
     
     To send to [[https://en.wikipedia.org/wiki/Pure_Data][Pure Data]], start pd, first create a patch with a
-    =[netreceive 3012]= object and a =[print]= object attached to the
+    =[netreceive 3012]= object and a =[print]= object connected to the
     netreceive's left outlet. When sending to pd watch the messages
     appearing in pd's post window.
 
