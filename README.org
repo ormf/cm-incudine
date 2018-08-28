@@ -4,14 +4,14 @@
    common music) with realtime capabilities using the "incudine"
    realtime system by Tito Latini. Currently realtime midi, FUDI, OSC
    and any function call are supported. Note: incudine currently only
-   works with sbcl.
+   works with [[http://www.sbcl.org/][sbcl]] and a working [[http://jackaudio.org/][JACK]] setup.
 
-   The package depends on
+   The Common Lisp package depends on
 
-   - cm
-   - incudine
-   - quicklisp (or asdf)
-   - fudi-incudine
+   - [[http://incudine.sourceforge.net/][incudine]]
+   - [[https://github.com/ormf/fudi-incudine][fudi-incudine]]
+   - [[https://github.com/ormf/cm][cm]]
+   - [[https://github.com/ormf/cm-incudine][cm-incudine]]
 
    As all the code is evaluated within the "cm" package and exported
    from there, code evaluation should take place within the "cm"
@@ -44,7 +44,9 @@
 
 ** Installation
 
-   First get all components:
+   You need a system with a working [[http://jackaudio.org/][JACK]] and [[http://www.sbcl.org/][sbcl]] setup.
+
+   First get all Common Lisp components:
 
    - [[http://incudine.sourceforge.net/][incudine]]
    - [[https://github.com/ormf/fudi-incudine][fudi-incudine]]
@@ -58,7 +60,7 @@
 
 ** Usage
 
-   Start sbcl and evaluate the following:
+   First start [[http://jackaudio.org/][JACK]], then sbcl and evaluate the following:
 
    #+BEGIN_SRC lisp
      (ql:quickload "cm-incudine")
