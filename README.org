@@ -110,10 +110,12 @@
 
 *** FUDI output and input
     
-    To send to [[https://en.wikipedia.org/wiki/Pure_Data][Pure Data]], start pd, first create a patch with a
-    =[netreceive 3012]= object and a =[print]= object connected to the
-    netreceive's left outlet. When sending to pd watch the messages
-    appearing in pd's post window.
+    Sending to [[https://en.wikipedia.org/wiki/Pure_Data][Pure Data]] requires to first start pd and open or create
+    a patch containing a =[netreceive 3012]= object. For testing
+    purposes a =[print]= object connected to the netreceive's left
+    outlet can be used. In this case watch the messages appearing in
+    pd's post window, when sending FUDI messages from cm to pd using
+    the code below.
 
     #+BEGIN_SRC lisp
       (fudi-open-default :host "127.0.0.1" :port 3012 :direction :output)
