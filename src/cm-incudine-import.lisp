@@ -1,6 +1,7 @@
 (in-package :cm)
 
-(defobject incudine-event (event) (fn args)
+(defobject incudine-event (event)
+    (fn args)
   #|( :event-streams incudine-file )|#)
 
 (defun simple (&rest args)

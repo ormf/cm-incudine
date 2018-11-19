@@ -12,7 +12,7 @@
         (let ((type (getf args ':receive-type)))
           (if type (setf (rt-stream-receive-type stream) type)
               (if (and (not (rt-stream-receive-type stream))
-                       (not (equal (type-of stream) 'jackmidi:input-stream)))
+                       (not (member (type-of stream) '(fudi::input-stream jackmidi:input-stream))))
                   (setf (rt-stream-receive-type stream)
                           *receive-type*)))
           (stream-receive-init stream hook args)

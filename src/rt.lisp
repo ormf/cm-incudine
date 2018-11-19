@@ -57,7 +57,6 @@
   (declare (ignore arg))
   (eq :started (incudine:rt-status)))
 
-
 (defparameter *rts-thread* nil)
 
 (defun rts-thread? ()

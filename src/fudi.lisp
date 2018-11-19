@@ -27,7 +27,8 @@
      (:event-streams))
 
 (defun fudi-open-default (&key
-                            (host "127.0.0.1") (port 3001)
+                            (host "127.0.0.1")
+                            (port 3001)
                             (protocol :tcp)
                             (direction :input))
   (case direction
@@ -37,13 +38,13 @@
        (setf *fudi-out* (fudi:open :host host
                                    :port port
                                    :protocol protocol
-                                   :direction direction))))
+                                   :direction :output))))
     (t (progn
          (fudi-close-default :input)
          (setf *fudi-in* (fudi:open :host host
-                                         :port port
-                                         :protocol protocol
-                                         :direction :input)))))) 
+                                    :port port
+                                    :protocol protocol
+                                    :direction :input)))))) 
 
 (defun fudi-open (&key
                     (host "127.0.0.1") (port 3001)
@@ -59,15 +60,17 @@
   (if (or (member :inout args)
           (member :input args)
           (not args))
-      (progn
-        (fudi:close *fudi-in*)
-        (setf *fudi-in* nil)))
+      (if *fudi-in*
+          (progn
+            (fudi:close *fudi-in*)
+            (setf *fudi-in* nil))))
   (if (or (member :inout args)
           (member :output args)
           (not args))
-      (progn
-        (fudi:close *fudi-out*)
-        (setf *fudi-out* nil))))
+      (if *fudi-out*
+          (progn
+            (fudi:close *fudi-out*)
+            (setf *fudi-out* nil)))))
 
 (defmacro fudi-close (stream)
   `(if (and ,stream (fudi:stream-p ,stream))
@@ -83,9 +86,6 @@
       (fudi:send stream msg)
       (warn "No valid output-stream: ~a" stream)))
 
-
-
-
 (defmethod write-event ((obj fudi) (str incudine-stream) scoretime)
   (alexandria:if-let (stream (fudi-stream obj))
     (at (+ (rts-now) scoretime)
@@ -100,3 +100,45 @@
 
 (export '(*fudi.in* *fudi-out* fudi fudi-open-default fudi-open fudi-open-default fudi-close-default
            send-fudi fudi-output-stream) :cm)
+
+
+;;; dummy method to make set-receiver! happy
+(defmethod rt-stream-receive-type ((stream fudi:input-stream))
+  *jackmidi-rcv-type-dummy*)
+
+;;; dummy method to make set-receiver! happy
+(defmethod object-name ((stream fudi:input-stream))
+  *jackmidi-obj-name-dummy*)
+
+(defmethod rt-stream-receive-data ((stream fudi:input-stream))
+  (declare (ignore stream))
+  nil)
+
+(defmethod stream-receive-init ((stream fudi:input-stream) hook args)
+  (if (gethash stream *stream-recv-responders*)
+      (progn
+        (incudine:remove-responder (gethash stream *stream-recv-responders*))
+        (remhash stream *stream-recv-responders*)))
+  (let* ((responder
+          (incudine::make-fudi-responder
+           stream hook)))
+    (if responder
+        (setf (gethash stream *stream-recv-responders*) responder)
+        (error "~a: Couldn't add responder!" stream)))
+  (values))
+
+(defmethod stream-receive-start ((stream fudi:input-stream) args)
+  args
+  (if (incudine::receiver-status
+           (incudine::receiver stream))
+      T
+      (incudine:recv-start stream)))
+
+(defmethod stream-receive-stop ((stream fudi:input-stream))
+    (incudine:recv-stop stream)
+  (values))
+
+(defmethod stream-receive-deinit ((stream fudi:input-stream))
+  (if (incudine:remove-responder (gethash stream *stream-recv-responders*))
+      (error "~a: Couldn't remove responder!" stream)
+      (remhash stream *stream-recv-responders*)))

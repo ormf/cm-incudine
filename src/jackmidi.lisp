@@ -27,8 +27,8 @@
 
 (defparameter *ml-opcodes*
   `((,+ml-control-change-opcode+ . :cc)
-    (,+ml-note-off-opcode+ . :note-on)
-    (,+ml-note-on-opcode+ . :note-off)
+    (,+ml-note-on-opcode+ . :note-on)
+    (,+ml-note-off-opcode+ . :note-off)
     (,+ml-program-change-opcode+ . :pgm-change)
     (,+ml-pitch-bend-opcode+ . :pitch-bend)
     (,+ml-key-pressure-opcode+ . :key-pressure)
@@ -68,14 +68,16 @@ filtering."
       (if *midi-in1*
           (progn
             (jackmidi:close *midi-in1*)
-            (setf *midi-in1* nil))))
+            (setf *midi-in1* nil))
+          (jackmidi:close "midi_in-1")))
   (if (or (member :inout args)
           (member :output args)
           (not args))
       (if *midi-out1*
           (progn
             (jackmidi:close *midi-out1*)
-            (setf *midi-out1* nil)))))
+            (setf *midi-out1* nil))
+          (jackmidi:close "midi_out-1"))))
 
 (defun midi-open-default (&key (direction :input) portname)
   (case direction
