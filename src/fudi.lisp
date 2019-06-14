@@ -19,6 +19,8 @@
 
 (defparameter *fudi-in* nil)
 (defparameter *fudi-out* nil)
+(export '*fudi-in* :cm)
+(export '*fudi-out* :cm)
 
 (defobject fudi (event)
     ((message :initform 0 :accessor fudi-msg)
@@ -44,7 +46,8 @@
          (setf *fudi-in* (fudi:open :host host
                                     :port port
                                     :protocol protocol
-                                    :direction :input)))))) 
+                                    :direction :input))
+         (fudi::start-socket-server *fudi-in*))))) 
 
 (defun fudi-open (&key
                     (host "127.0.0.1") (port 3001)
@@ -60,14 +63,14 @@
   (if (or (member :inout args)
           (member :input args)
           (not args))
-      (if *fudi-in*
+      (if (and *fudi-in* (slot-value *fudi-in* 'fudi::socket))
           (progn
             (fudi:close *fudi-in*)
             (setf *fudi-in* nil))))
   (if (or (member :inout args)
           (member :output args)
           (not args))
-      (if *fudi-out*
+      (if (and *fudi-out* (slot-value *fudi-out* 'fudi::socket))
           (progn
             (fudi:close *fudi-out*)
             (setf *fudi-out* nil)))))

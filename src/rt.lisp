@@ -45,10 +45,10 @@
     ((:sample) (incudine:now))
     ((:ms) (* (incudine:now) incudine::*sample-duration* 1000))))
 
-(defun rts (&rest args)
-  (declare (ignore args))
+(defun rts (&key (rt-wait 0))
   (cm)
   (incudine:rt-start)
+  (sleep rt-wait)
   (midi-open-default :direction :input)
   (midi-open-default :direction :output)
   (setf *rts-out* (new incudine-stream :input *midi-in1* :output *midi-out1*)))
