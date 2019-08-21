@@ -153,7 +153,7 @@ filtering."
 ;;    (format t "~a~%" scoretime)
 ;;    (break "write-event (incudine-stream):")
     (multiple-value-bind (keyn ampl)
-        (incudine-ensure-velocity (midi-keynum obj) (float (midi-amplitude obj)))
+        (incudine-ensure-velocity (midi-keynum obj) (midi-amplitude obj))
       (declare (type (integer 0 127) ampl))
       (let ((time (+ (rts-now) scoretime)))
         (multiple-value-bind (keyn chan)
@@ -164,7 +164,7 @@ filtering."
           (declare (type (signed-byte 8) keyn chan))
           (unless (< keyn 0)
             (midi-note stream time keyn
-                       (the (or fixnum single-float) (float (midi-duration obj)))
+                       (float (midi-duration obj))
                        ampl chan))))
       (values))))
 
@@ -174,14 +174,14 @@ filtering."
 ;;    (format t "~a~%" scoretime)
 ;;    (break "write-event (midi): ~a~%~a~%" obj str)
     (multiple-value-bind (keyn ampl)
-        (incudine-ensure-velocity (floor (midi-keynum obj)) (float (midi-amplitude obj)))
+        (incudine-ensure-velocity (floor (midi-keynum obj)) (midi-amplitude obj))
       (declare (type (integer 0 127) ampl))
       (let ((time (+ (rts-now) scoretime)))
         (with-slots (duration channel) obj
           (declare (type (signed-byte 8) keyn channel))
           (unless (< keyn 0)
             (midi-note stream time keyn
-                       (the (or fixnum single-float) (float duration))
+                       (float duration)
                        ampl channel))))
       (values))))
 
