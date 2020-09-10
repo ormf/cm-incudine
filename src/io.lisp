@@ -19,7 +19,7 @@
           (stream-receive-init stream hook args)
           (cond
            ((stream-receive-start stream args)
-            (format t "~%; ~a receiving!" stream))
+            (format t "~&~a receiving!~%" stream))
            (t (stream-receive-deinit stream)
             (error
              "set-receiver!: ~s does not support :receive-type ~s."

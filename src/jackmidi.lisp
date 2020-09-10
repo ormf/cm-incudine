@@ -264,7 +264,7 @@ filtering."
   "return values keynum and chan according to tuning specs in stream."
   (declare (type (or fixnum single-float double-float symbol) keyn)
            (type (integer 0 15) chan)
-           (type jackmidi:output-stream stream)
+           (type (or jackmidi:output-stream cm:incudine-stream) stream)
            (type incudine.util:sample time)
            (optimize speed))
   (flet ((truncate-float (k &optional round-p)

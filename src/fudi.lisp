@@ -32,6 +32,7 @@
                             (host "127.0.0.1")
                             (port 3001)
                             (protocol :tcp)
+                            (element-type :string)
                             (direction :input))
   (case direction
     (:output
@@ -40,22 +41,26 @@
        (setf *fudi-out* (fudi:open :host host
                                    :port port
                                    :protocol protocol
+                                   :element-type element-type
                                    :direction :output))))
     (t (progn
          (fudi-close-default :input)
          (setf *fudi-in* (fudi:open :host host
                                     :port port
                                     :protocol protocol
+                                    :element-type element-type
                                     :direction :input))
          (fudi::start-socket-server *fudi-in*))))) 
 
 (defun fudi-open (&key
                     (host "127.0.0.1") (port 3001)
                     (protocol :tcp)
+                    (element-type :string)
                     (direction :input))
   (fudi:open :host host
              :port port
              :protocol protocol
+             :element-type element-type
              :direction direction))
 
 
