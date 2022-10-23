@@ -323,7 +323,8 @@ filtering."
 (export '(jackmidi-input-stream jackmidi-output-stream
            midi-out ctl-out note-on note-off pitch-bend pgm-change midi-note midi-write-message
           midi-open-default midi-close-default
-          incudine-ensure-microtuning))
+          incudine-ensure-microtuning *rt-scale* *midi-in1* *midi-out1* *jackmidi-rcv-type-dummy*
+          *jackmidi-obj-name-dummy*))
 
 
 #|
