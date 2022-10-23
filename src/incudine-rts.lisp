@@ -96,7 +96,6 @@
 (defmethod initialize-io ((obj incudine-stream))
   (channel-tuning-init obj))
 
-
 (defun incudine-open (&rest args)
   (apply #'open-io "incudine-rts.ic" t args))
 

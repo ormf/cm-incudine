@@ -24,6 +24,7 @@
 (defparameter *stream-recv-responders* (make-hash-table))
 (defparameter  *jackmidi-rcv-type-dummy* nil)
 (defparameter  *jackmidi-obj-name-dummy* nil)
+(defparameter *rt-scale* 1) ;;; time scaling for realtime output
 
 (defparameter *ml-opcodes*
   `((,+ml-control-change-opcode+ . :cc)
@@ -51,6 +52,7 @@ filtering."
 ;;; function:
 
 (push (list #'typep 'jackmidi:stream) *special-event-streams*)
+
 (defmethod open-io ((obj jackmidi:stream) dir &rest args)
   (declare (ignore dir args))
 ;;;  (format t "open-io: ~a, io-open: ~a" obj (io-open obj))
@@ -142,6 +144,11 @@ filtering."
   (let* ((status (+ chan (ash #b1100 4))))
     (midi-out stream status pgm 0 2)))
 
+(defun tempo-change (stream tempo)
+  "wrapper for midi tempo-change messages."
+  (declare (ignore stream))
+  (setf *rt-scale* (/ 60 tempo)))
+
 (declaim (inline midi-note))
 (defun midi-note (stream time pitch dur velo chan)
   (at time (note-on stream pitch velo chan))
@@ -155,7 +162,7 @@ filtering."
     (multiple-value-bind (keyn ampl)
         (incudine-ensure-velocity (midi-keynum obj) (midi-amplitude obj))
       (declare (type (integer 0 127) ampl))
-      (let ((time (+ (rts-now) scoretime)))
+      (let ((time (+ (rts-now) (* *rt-scale* scoretime))))
         (multiple-value-bind (keyn chan)
             (incudine-ensure-microtuning (coerce keyn 'single-float)
                                          (midi-channel obj) str
@@ -176,7 +183,7 @@ filtering."
     (multiple-value-bind (keyn ampl)
         (incudine-ensure-velocity (floor (midi-keynum obj)) (midi-amplitude obj))
       (declare (type (integer 0 127) ampl))
-      (let ((time (+ (rts-now) scoretime)))
+      (let ((time (+ (rts-now) (* *rt-scale* scoretime))))
         (with-slots (duration channel) obj
           (declare (type (signed-byte 8) keyn channel))
           (unless (< keyn 0)
@@ -197,6 +204,7 @@ filtering."
   (declare (ignore stream))
   nil)
 
+#|
 (defmethod stream-receive-init ((stream jackmidi:input-stream) hook args)
   (if (gethash stream *stream-recv-responders*)
       (progn
@@ -216,6 +224,7 @@ filtering."
         (setf (gethash stream *stream-recv-responders*) responder)
         (error "~a: Couldn't add responder!" stream)))
   (values))
+|#
 
 (defmethod stream-receive-init ((stream jackmidi:input-stream) hook args)
   (if (gethash stream *stream-recv-responders*)
@@ -246,9 +255,9 @@ filtering."
 
 (defmethod stream-receive-start ((stream jackmidi:input-stream) args)
   args
-  (if (incudine::receiver-status
-           (incudine::receiver *midi-in1*))
-      T
+  (or (and (incudine::receiver stream)
+           (incudine::receiver-status
+            (incudine::receiver stream)))
       (incudine:recv-start stream)))
 
 (defmethod stream-receive-stop ((stream jackmidi:input-stream))

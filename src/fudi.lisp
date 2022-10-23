@@ -32,7 +32,7 @@
                             (host "127.0.0.1")
                             (port 3001)
                             (protocol :tcp)
-                            (element-type :string)
+                            (element-type 'character)
                             (direction :input))
   (case direction
     (:output
@@ -55,7 +55,7 @@
 (defun fudi-open (&key
                     (host "127.0.0.1") (port 3001)
                     (protocol :tcp)
-                    (element-type :string)
+                    (element-type 'character)
                     (direction :input))
   (fudi:open :host host
              :port port

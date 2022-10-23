@@ -33,6 +33,7 @@
 |#
 
 (defparameter *time-format* :sec)
+(defparameter *cm-rts-started* nil)
 
 (defun set-time-format (fmt)
   (if (member fmt '(:sec :sample :ms))
@@ -51,11 +52,14 @@
   (sleep rt-wait)
   (midi-open-default :direction :input)
   (midi-open-default :direction :output)
-  (setf *rts-out* (new incudine-stream :input *midi-in1* :output *midi-out1*)))
+  (setf *rts-out* (new incudine-stream :input *midi-in1* :output *midi-out1*))
+  (setf *cm-rts-started* t)
+  :cm-rts-started)
 
 (defun rts? (&optional arg)
   (declare (ignore arg))
-  (eq :started (incudine:rt-status)))
+  (and (eq :started (incudine:rt-status))
+       *cm-rts-started*))
 
 (defparameter *rts-thread* nil)
 
