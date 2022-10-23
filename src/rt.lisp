@@ -47,7 +47,7 @@
     ((:ms) (* (incudine:now) incudine::*sample-duration* 1000))))
 
 (defun rts (&key (rt-wait 0))
-  (cm)
+;;;  (cm)
   (incudine:rt-start)
   (sleep rt-wait)
   (midi-open-default :direction :input)
