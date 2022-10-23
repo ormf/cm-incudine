@@ -19,8 +19,6 @@
 
 (defparameter *fudi-in* nil)
 (defparameter *fudi-out* nil)
-(export '*fudi-in* :cm)
-(export '*fudi-out* :cm)
 
 (defobject fudi (event)
     ((message :initform 0 :accessor fudi-msg)
@@ -150,3 +148,5 @@
   (if (incudine:remove-responder (gethash stream *stream-recv-responders*))
       (error "~a: Couldn't remove responder!" stream)
       (remhash stream *stream-recv-responders*)))
+
+(export '(*fudi-in* *fudi-out* fudi) 'cm)
