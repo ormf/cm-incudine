@@ -86,12 +86,16 @@ filtering."
     (:output
      (progn
        (midi-close-default :output)
-       (setf *midi-out1* (jackmidi:open :direction :output :port-name (if portname portname "midi_out-1")))
+       (setf *midi-out1*
+             (or (first (jackmidi:all-streams :output))
+                 (jackmidi:open :direction :output :port-name (if portname portname "midi_out-1"))))
        (if *rts-out* (setf (incudine-output *rts-out*) *midi-out1*))))
     (t (progn
          (midi-close-default :input)
-         (setf *midi-in1* (jackmidi:open :direction :input
-                                         :port-name (if portname portname "midi_in-1")))
+         (setf *midi-in1*
+               (or (first (jackmidi:all-streams :input))
+                   (jackmidi:open :direction :input
+                                  :port-name (if portname portname "midi_in-1"))))
          (if *rts-out* (setf (incudine-input *rts-out*) *midi-in1*))))))
 
 (defun jackmidi-input-stream ()
