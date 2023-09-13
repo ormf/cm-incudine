@@ -18,7 +18,10 @@
                                       (:file "rt")
                                       (:file "osc")
                                       (:file "fudi")
+                                      #-portaudio
                                       (:file "jackmidi")
+                                      #+portaudio
+                                      (:file "portmidi")
                                       (:file "io")
                                       (:file "cm-incudine-import")
                                       (:file "exports")))))

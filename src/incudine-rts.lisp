@@ -7,7 +7,7 @@
 ;;; modify it under the terms of the Gnu Public License, version 2 or
 ;;; later. See https://www.gnu.org/licenses/gpl-2.0.html for the text
 ;;; of this agreement.
-;;; 
+;;;
 ;;; This program is distributed in the hope that it will be useful,
 ;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -57,8 +57,10 @@
   (setf (io-class-file-types <incudine-stream>) '("*.ic"))
   (values))
 
-(defmethod incudine-output ((obj jackmidi:output-stream))
-  obj)
+(defmethod incudine-output ((obj #+portaudio pm:output-stream #-portaudio jackmidi:outputstream))
+               obj)
+
+
 
 (defmethod print-object ((obj incudine-stream) port)
            (let ((name (object-name obj))
@@ -209,7 +211,7 @@
 
 (defmethod write-event
     ((obj midi-program-change) (str incudine-stream) scoretime)
-  (alexandria:if-let (stream (or (incudine-output str) (jackmidi-output-stream)))
+  (alexandria:if-let (stream (or (incudine-output str) (midi-output-stream)))
 ;;    (break "write-event (midi-program-change): ~a" obj)
     (let* ((dat (midi-stream-tunedata str)))
       (destructuring-bind (offs num)
@@ -238,7 +240,7 @@
                  (midi-event-data1 obj) (or (midi-event-data2 obj) 0) 3)))))))
 
 (defmethod write-event
-    ((obj midi-event) (stream jackmidi:output-stream) scoretime)
+    ((obj midi-event) (stream #+portaudio pm:output-stream #-portaudio jackmidi:output-stream) scoretime)
 ;;;  (break "write-event (midi-event): ~a" obj)
   (typecase obj
     (midi-channel-event
@@ -262,7 +264,7 @@
                       (channel-message-data2 obj)
                       3))))
 
-(defmethod write-event ((obj integer) (stream jackmidi:output-stream) scoretime)
+(defmethod write-event ((obj integer) (stream #+portaudio pm:output-stream #-portaudio jackmidi:outputstream) scoretime)
   (at (+ (rts-now) scoretime)
       (midi-out
        stream
@@ -280,7 +282,7 @@
   (at (+ (rts-now) scoretime) obj)
   (values))
 
-(defmethod write-event ((obj function) (str jackmidi:output-stream) scoretime)
+(defmethod write-event ((obj function) (str #+portaudio pm:output-stream #-portaudio jackmidi:outputstream) scoretime)
   (declare (ignore str))
 ;;  (break "write-event (fn): ~a" obj)
   (at (+ (rts-now) scoretime) obj)
@@ -371,7 +373,7 @@
            ;; new entry, add to table
 	   ;; if its a seq or a process we also have to cache the
 	   ;; start time of the object: (<object> . start)
-	   ;; start time is in *time-format* units 
+	   ;; start time is in *time-format* units
 	   (when (or (= handle *qentry-seq*)
 		     (= handle *qentry-process*))
 	     (setq object (cons object start)))
@@ -415,7 +417,7 @@
 		    data
 		    (or (gethash handle *qentries*)
 			(error "No RTS entry for handle ~D."
-			       handle))))   
+			       handle))))
     (cond ((= etype *qentry-process*)
            ;; entry is (<process> . <start>)
 	   (rtsdebug t "~&process=~s, start=~s time=~s~%"
@@ -429,7 +431,7 @@
                                    ':rts)))
           ((= etype *qentry-seq*)
 	   ;; entry is ( (<seq> . <subobjects>) . <start>)
-	   (rtsdebug t "~&seq=~s, start=~d time=~d~%" 
+	   (rtsdebug t "~&seq=~s, start=~d time=~d~%"
 		     (caar entry) (cdr entry) time)
            (destructuring-bind (seq . start) entry
              (scheduler-do-seq seq
@@ -445,7 +447,7 @@
 
 ;;;
 ;;; user level functions
-;;; 
+;;;
 
 
 
@@ -463,7 +465,7 @@
 (defun rts? (&optional arg)
   (apply #'rts:scheduler-state? arg))
 
-(defun rts-pause () 
+(defun rts-pause ()
   (rts:scheduler-pause)
   (values))
 
@@ -487,7 +489,7 @@
 		   *rts-out* 0)))
   (values))
 
-(defun rts-reset () 
+(defun rts-reset ()
   ;;(print :rts-reset)
   #+openmcl (ccl:gc)
   #+sbcl (sb-ext:gc)
@@ -541,18 +543,18 @@
 
 (export '(*rts-out* incudine-stream
            samps->time time->samps secs->samps samps->secs at amp->velo
-           jackmidi-input-stream jackmidi-output-stream osc-output-stream fudi-output-stream
+           jackmidi≈-input-stream jackmidi-output-stream osc-output-stream fudi-output-stream
            midi-out ctl-out note-on note-off pitch-bend pgm-change midi-note midi-write-message
            incudine-ensure-microtuning write-event rts-enqueue
-           midi-open-default midi-close-default 
-           
+           midi-open-default midi-close-default
+
            *fudi.in* *fudi-out* fudi fudi-open-default fudi-open fudi-close-default
-           send-fudi 
+           send-fudi
 ))
 |#
 
 (export '(rts *rts-out* incudine-stream
           samps->time time->samps secs->samps samps->secs at amp->velo
-           
+
           write-event)
         :cm)
