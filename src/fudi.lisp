@@ -7,7 +7,7 @@
 ;;; modify it under the terms of the Gnu Public License, version 2 or
 ;;; later. See https://www.gnu.org/licenses/gpl-2.0.html for the text
 ;;; of this agreement.
-;;; 
+;;;
 ;;; This program is distributed in the hope that it will be useful,
 ;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -48,7 +48,7 @@
                                     :protocol protocol
                                     :element-type element-type
                                     :direction :input))
-         (fudi::start-socket-server *fudi-in*))))) 
+         (fudi::start-socket-server *fudi-in*)))))
 
 (defun fudi-open (&key
                     (host "127.0.0.1") (port 3001)
@@ -110,11 +110,11 @@
 
 ;;; dummy method to make set-receiver! happy
 (defmethod rt-stream-receive-type ((stream fudi:input-stream))
-  *jackmidi-rcv-type-dummy*)
+  *midi-rcv-type-dummy*)
 
 ;;; dummy method to make set-receiver! happy
 (defmethod object-name ((stream fudi:input-stream))
-  *jackmidi-obj-name-dummy*)
+  *midi-obj-name-dummy*)
 
 (defmethod rt-stream-receive-data ((stream fudi:input-stream))
   (declare (ignore stream))

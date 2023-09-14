@@ -48,18 +48,18 @@
 filtering."
   (+ (ash opcode 4) channels))
 
-;;; add jackmidi stream structs to the special targets of the 'events
+;;; add pm stream structs to the special targets of the 'events
 ;;; function:
 
-(push (list #'typep 'jackmidi:stream) *special-event-streams*)
+(push (list #'typep 'pm:stream) *special-event-streams*)
 
-(defmethod open-io ((obj jackmidi:stream) dir &rest args)
+(defmethod open-io ((obj pm:stream) dir &rest args)
   (declare (ignore dir args))
 ;;;  (format t "open-io: ~a, io-open: ~a" obj (io-open obj))
            (when (not (io-open obj)))
            obj)
 
-(defmethod close-io ((obj jackmidi:stream) &rest mode)
+(defmethod close-io ((obj pm:stream) &rest mode)
   (declare (ignore obj mode))
   (values))
 
@@ -69,48 +69,54 @@ filtering."
           (not args))
       (if *midi-in1*
           (progn
-            (jackmidi:close *midi-in1*)
+            (pm:close *midi-in1*)
             (setf *midi-in1* nil))
-          (jackmidi:close "midi_in-1")))
+          (let ((default (pm-input-stream)))
+            (if default (pm:close default)))))
   (if (or (member :inout args)
           (member :output args)
           (not args))
       (if *midi-out1*
           (progn
-            (jackmidi:close *midi-out1*)
+            (pm:close *midi-out1*)
             (setf *midi-out1* nil))
-          (jackmidi:close "midi_out-1"))))
+          (let ((default (pm-output-stream)))
+            (if default (pm:close default))))))
 
-(defun midi-open-default (&key (direction :input) portname)
+(defun midi-open-default (&key (direction :input) device)
   (case direction
     (:output
      (progn
        (midi-close-default :output)
        (setf *midi-out1*
-             (or (first (jackmidi:all-streams :output))
-                 (jackmidi:open :direction :output :port-name (if portname portname "midi_out-1"))))
+             (or (first (pm:all-streams :output))
+                 (pm:open (if device device (pm:get-default-output-device-id))
+                  :direction :output)))
        (if *rts-out* (setf (incudine-output *rts-out*) *midi-out1*))))
     (t (progn
          (midi-close-default :input)
          (setf *midi-in1*
-               (or (first (jackmidi:all-streams :input))
-                   (jackmidi:open :direction :input
-                                  :port-name (if portname portname "midi_in-1"))))
+               (or (first (pm:all-streams :input))
+                 (pm:open (if device device (pm:get-default-input-device-id))
+                  :direction :input)))
          (if *rts-out* (setf (incudine-input *rts-out*) *midi-in1*))))))
 
-(defun jackmidi-input-stream ()
-  (unless (zerop (length jackmidi::*output-streams*))
-    (elt jackmidi::*input-streams* 0)))
+(defun pm-input-stream ()
+  (let ((input-streams (pm:all-streams :input) ))
+    (unless (zerop (length input-streams))
+    (elt input-streams 0))))
 
-(defun jackmidi-output-stream ()
-  (unless (zerop (length jackmidi::*output-streams*))
-    (elt jackmidi::*output-streams* 0)))
+(defun pm-output-stream ()
+  (let ((output-streams (pm:all-streams :output) ))
+    (unless (zerop (length output-streams))
+      (elt output-streams 0))))
 
 (declaim (inline midi-out))
 (defun midi-out (stream status data1 data2 data-size)
+  (declare (ignore data-size))
   "create a closure to defer a call to jm_write_event."
   (lambda ()
-    (jackmidi:write-short stream (jackmidi:message status data1 data2) data-size)))
+    (pm:write-short stream 0 (pm:message status data1 data2))))
 
 (declaim (inline ctl-out))
 (defun ctl-out (stream ccno ccval chan)
@@ -179,7 +185,7 @@ filtering."
                        ampl chan))))
       (values))))
 
-(defmethod write-event ((obj midi) (str jackmidi:output-stream) scoretime)
+(defmethod write-event ((obj midi) (str pm:output-stream) scoretime)
   (declare (type (or fixnum float) scoretime))
   (alexandria:if-let (stream (incudine-output str))
 ;;    (format t "~a~%" scoretime)
@@ -197,19 +203,19 @@ filtering."
       (values))))
 
 ;;; dummy method to make set-receiver! happy
-(defmethod rt-stream-receive-type ((stream jackmidi:input-stream))
+(defmethod rt-stream-receive-type ((stream pm:input-stream))
   *midi-rcv-type-dummy*)
 
 ;;; dummy method to make set-receiver! happy
-(defmethod object-name ((stream jackmidi:input-stream))
+(defmethod object-name ((stream pm:input-stream))
   *midi-obj-name-dummy*)
 
-(defmethod rt-stream-receive-data ((stream jackmidi:input-stream))
+(defmethod rt-stream-receive-data ((stream pm:input-stream))
   (declare (ignore stream))
   nil)
 
 #|
-(defmethod stream-receive-init ((stream jackmidi:input-stream) hook args)
+(defmethod stream-receive-init ((stream pm:input-stream) hook args)
   (if (gethash stream *stream-recv-responders*)
       (progn
         (incudine:remove-responder (gethash stream *stream-recv-responders*))
@@ -230,7 +236,7 @@ filtering."
   (values))
 |#
 
-(defmethod stream-receive-init ((stream jackmidi:input-stream) hook args)
+(defmethod stream-receive-init ((stream pm:input-stream) hook args)
   (if (gethash stream *stream-recv-responders*)
       (progn
         (incudine:remove-responder (gethash stream *stream-recv-responders*))
@@ -257,18 +263,18 @@ filtering."
         (error "~a: Couldn't add responder!" stream)))
   (values))
 
-(defmethod stream-receive-start ((stream jackmidi:input-stream) args)
+(defmethod stream-receive-start ((stream pm:input-stream) args)
   args
   (or (and (incudine::receiver stream)
            (incudine::receiver-status
             (incudine::receiver stream)))
       (incudine:recv-start stream)))
 
-(defmethod stream-receive-stop ((stream jackmidi:input-stream))
+(defmethod stream-receive-stop ((stream pm:input-stream))
     (incudine:recv-stop stream)
   (values))
 
-(defmethod stream-receive-deinit ((stream jackmidi:input-stream))
+(defmethod stream-receive-deinit ((stream pm:input-stream))
   (if (incudine:remove-responder (gethash stream *stream-recv-responders*))
       (error "~a: Couldn't remove responder!" stream)
       (remhash stream *stream-recv-responders*)))
@@ -277,7 +283,7 @@ filtering."
   "return values keynum and chan according to tuning specs in stream."
   (declare (type (or fixnum single-float double-float symbol) keyn)
            (type (integer 0 15) chan)
-           (type (or jackmidi:output-stream cm:incudine-stream) stream)
+           (type (or pm:output-stream cm:incudine-stream) stream)
            (type incudine.util:sample time)
            (optimize speed))
   (flet ((truncate-float (k &optional round-p)
@@ -324,7 +330,7 @@ filtering."
             (t (error "midi keynum ~s not key number or note." keyn)))
       (values keyn chan))))
 
-(export '(jackmidi-input-stream jackmidi-output-stream
+(export '(pm-input-stream pm-output-stream
            midi-out ctl-out note-on note-off pitch-bend pgm-change midi-note midi-write-message
           midi-open-default midi-close-default
           incudine-ensure-microtuning *rt-scale* *midi-in1* *midi-out1* *midi-rcv-type-dummy*
@@ -344,55 +350,55 @@ filtering."
 ;;;
 ;;;
 ;;; It needs checking whether this could be integrated into
-;;; incudine-rts as well. Otherwise jackmidi-stream could serve as
+;;; incudine-rts as well. Otherwise pm-stream could serve as
 ;;; a standalone protocol for midi only rt-streams.
 ;;;
 ;;; Use pm.lisp as reference.
 
-(defparameter *jackmidi-default-input* nil)
-(defparameter *jackmidi-default-output* nil)
-(defparameter *jackmidi-default-latency* 5)
-(defparameter *jackmidi-default-inbuf-size* 512)
-(defparameter *jackmidi-default-outbuf-size* 2048)
-(defparameter *jackmidi-default-filter* 0)
-(defparameter *jackmidi-default-mask* 0)
+(defparameter *pm-default-input* nil)
+(defparameter *pm-default-output* nil)
+(defparameter *pm-default-latency* 5)
+(defparameter *pm-default-inbuf-size* 512)
+(defparameter *pm-default-outbuf-size* 2048)
+(defparameter *pm-default-filter* 0)
+(defparameter *pm-default-mask* 0)
 
 (progn
- (defclass jackmidi-stream (rt-stream midi-stream-mixin)
-           ((input :initform *jackmidi-default-input* :initarg :input
-             :accessor jackmidi-input)
-            (output :initform *jackmidi-default-output* :initarg
-             :output :accessor jackmidi-output)
-            (latency :initform *jackmidi-default-latency* :initarg
+ (defclass pm-stream (rt-stream midi-stream-mixin)
+           ((input :initform *pm-default-input* :initarg :input
+             :accessor pm-input)
+            (output :initform *pm-default-output* :initarg
+             :output :accessor pm-output)
+            (latency :initform *pm-default-latency* :initarg
              :latency :accessor rt-stream-latency)
-            (inbufsize :initform *jackmidi-default-inbuf-size*
-             :initarg :inbuf-size :accessor jackmidi-inbuf-size)
-            (outbufsize :initform *jackmidi-default-outbuf-size*
-             :initarg :outbuf-size :accessor jackmidi-outbuf-size)
+            (inbufsize :initform *pm-default-inbuf-size*
+             :initarg :inbuf-size :accessor pm-inbuf-size)
+            (outbufsize :initform *pm-default-outbuf-size*
+             :initarg :outbuf-size :accessor pm-outbuf-size)
             (receive-data :initform (list nil nil nil nil) :accessor
              rt-stream-receive-data)
             (receive-mode :initform :message :initarg :receive-mode
              :accessor rt-stream-receive-mode)
-            (filter :initform *jackmidi-default-filter* :initarg
-             :filter :accessor jackmidi-filter)
-            (mask :initform *jackmidi-default-mask* :initarg
-             :channel-mask :accessor jackmidi-channel-mask)
+            (filter :initform *pm-default-filter* :initarg
+             :filter :accessor pm-filter)
+            (mask :initform *pm-default-mask* :initarg
+             :channel-mask :accessor pm-channel-mask)
             (offset :initform 0 :initarg :offset :accessor
-             jackmidi-offset))
+             pm-offset))
            #+metaclasses  (:metaclass io-class))
- (defparameter <jackmidi-stream> (find-class 'jackmidi-stream))
- (finalize-class <jackmidi-stream>)
-;;; (setf (io-class-file-types <jackmidi-stream>) '("*.ic"))
+ (defparameter <pm-stream> (find-class 'pm-stream))
+ (finalize-class <pm-stream>)
+;;; (setf (io-class-file-types <pm-stream>) '("*.ic"))
  (values))
 
 
-(defmethod open-io ((obj jackmidi-stream) dir &rest args)
+(defmethod open-io ((obj pm-stream) dir &rest args)
   (declare (ignore dir args))
 ;;;  (format t "open-io: ~a, io-open: ~a" obj (io-open obj))
            (when (not (io-open obj)))
            obj)
 
-(defmethod close-io ((obj jackmidi-stream) &rest mode)
+(defmethod close-io ((obj pm-stream) &rest mode)
   (declare (ignore obj mode))
   (values))
 

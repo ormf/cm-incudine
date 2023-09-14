@@ -13,7 +13,8 @@
           (if type (setf (rt-stream-receive-type stream) type)
               (if (and (not (rt-stream-receive-type stream))
                        (not (member (type-of stream)
-                                    '(fudi::input-stream jackmidi:input-stream))))
+                                    '(fudi::input-stream #-portaudio jackmidi:input-stream
+                                                         #+portaudio pm:input-stream))))
                   (setf (rt-stream-receive-type stream)
                           *receive-type*)))
           (stream-receive-init stream hook args)
@@ -25,4 +26,3 @@
              "set-receiver!: ~s does not support :receive-type ~s."
              stream (rt-stream-receive-type stream))))
           (values)))))
-
