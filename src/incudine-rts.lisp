@@ -57,7 +57,7 @@
   (setf (io-class-file-types <incudine-stream>) '("*.ic"))
   (values))
 
-(defmethod incudine-output ((obj #+portaudio pm:output-stream #-portaudio jackmidi:outputstream))
+(defmethod incudine-output ((obj #+portaudio pm:output-stream #-portaudio jackmidi:output-stream))
                obj)
 
 
@@ -264,7 +264,7 @@
                       (channel-message-data2 obj)
                       3))))
 
-(defmethod write-event ((obj integer) (stream #+portaudio pm:output-stream #-portaudio jackmidi:outputstream) scoretime)
+(defmethod write-event ((obj integer) (stream #+portaudio pm:output-stream #-portaudio jackmidi:output-stream) scoretime)
   (at (+ (rts-now) scoretime)
       (midi-out
        stream
@@ -282,7 +282,7 @@
   (at (+ (rts-now) scoretime) obj)
   (values))
 
-(defmethod write-event ((obj function) (str #+portaudio pm:output-stream #-portaudio jackmidi:outputstream) scoretime)
+(defmethod write-event ((obj function) (str #+portaudio pm:output-stream #-portaudio jackmidi:output-stream) scoretime)
   (declare (ignore str))
 ;;  (break "write-event (fn): ~a" obj)
   (at (+ (rts-now) scoretime) obj)
