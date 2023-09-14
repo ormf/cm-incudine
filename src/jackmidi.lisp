@@ -162,7 +162,7 @@ filtering."
   (declare (type (or fixnum float) scoretime))
   (alexandria:if-let (stream (incudine-output str))
 ;;    (format t "~a~%" scoretime)
-;;    (break "write-event (incudine-stream):")
+;;;    (break "write-event (incudine-stream):")
     (multiple-value-bind (keyn ampl)
         (incudine-ensure-velocity (midi-keynum obj) (midi-amplitude obj))
       (declare (type (integer 0 127) ampl))

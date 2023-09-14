@@ -237,7 +237,7 @@
                 (midi-out
                  stream
                  (logior (ash (midi-event-opcode obj) 4) (midi-event-channel obj))
-                 (midi-event-data1 obj) (or (midi-event-data2 obj) 0) 3)))))))
+                 (round (midi-event-data1 obj)) (or (round (midi-event-data2 obj)) 0) 3)))))))
 
 (defmethod write-event
     ((obj midi-event) (stream #+portaudio pm:output-stream #-portaudio jackmidi:output-stream) scoretime)
@@ -249,7 +249,7 @@
            (midi-out
             stream
             (logior (ash (midi-event-opcode obj) 4) (midi-event-channel obj))
-            (midi-event-data1 obj) (or (midi-event-data2 obj) 0) 3))))))
+            (round (midi-event-data1 obj)) (or (round (midi-event-data2 obj)) 0) 3))))))
 ;; (midi-write-message (midi-event->midi-message obj) str scoretime nil)
 
 (defmethod write-event ((obj integer) (str incudine-stream) scoretime)
