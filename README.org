@@ -4,7 +4,8 @@
    common music) with realtime capabilities using the [[http://incudine.sourceforge.net/][incudine]]
    realtime system by Tito Latini. Currently realtime MIDI, FUDI, OSC
    and any function call are supported. Note: [[http://incudine.sourceforge.net/][incudine]] currently only
-   works with [[http://www.sbcl.org/][sbcl]] and a working [[http://jackaudio.org/][JACK]] setup.
+   works with [[http://www.sbcl.org/][sbcl]] and you will need either a working [[http://jackaudio.org/][JACK]], 
+   or [[https://github.com/PortMidi/portmidi][PortMidi]] setup.
 
    The Common Lisp package depends on
 
@@ -44,7 +45,9 @@
 
 ** Installation
 
-   You need a system with a working [[http://jackaudio.org/][JACK]] and [[http://www.sbcl.org/][sbcl]] setup.
+   You will need a system that has a working [[http://www.sbcl.org/][sbcl]] setup. In addition you will need
+   to setup [[http://jackaudio.org/][JACK]] (for Linux), or [[https://github.com/PortMidi/portmidi/][PortMidi]]
+   (for Windows, OSX or a Linux system running PulseAudio).
 
    First get all Common Lisp components:
 
@@ -74,7 +77,7 @@
 
 *** MIDI Output
 
-   To send realtime MIDI messages to jackmidi output you can use
+   To send realtime MIDI messages to your midi output you can use
    =output=, =events= or =sprout=. Before testing the following code
    make sure some MIDI synth (e.g. [[https://qsynth.sourceforge.io/][QSynth]]) is started and connected to
    the incudine midi-out port (e.g. using the [[https://qjackctl.sourceforge.io/][QjackCtl]] program).
