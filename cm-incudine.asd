@@ -9,6 +9,7 @@
   :license "licensed under the GPL v2 or later."
   :depends-on (#:incudine
                #:cm
+               #:cl-midictl
                #:fudi)
   :serial t
   :components ((:module "src"

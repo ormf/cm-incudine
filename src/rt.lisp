@@ -48,11 +48,9 @@
 
 (defun rts (&key (rt-wait 0))
 ;;;  (cm)
-  (incudine:rt-start)
+  (cl-midictl:start-midi-engine)
   (sleep rt-wait)
-  (midi-open-default :direction :input)
-  (midi-open-default :direction :output)
-  (setf *rts-out* (new incudine-stream :input *midi-in1* :output *midi-out1*))
+  (setf *rts-out* *midi-out1*)
   (setf *cm-rts-started* t)
   :cm-rts-started)
 
