@@ -28,7 +28,6 @@
 
 (declaim (special *osc-out*))
 
-
 (progn
   (defclass incudine-stream (rt-stream midi-stream-mixin)
     ((input :initform *incudine-default-input* :initarg :input
@@ -59,8 +58,6 @@
 
 (defmethod incudine-output ((obj #+portaudio pm:output-stream #-portaudio jackmidi:output-stream))
                obj)
-
-
 
 (defmethod print-object ((obj incudine-stream) port)
            (let ((name (object-name obj))
@@ -211,7 +208,7 @@
 
 (defmethod write-event
     ((obj midi-program-change) (str incudine-stream) scoretime)
-  (alexandria:if-let (stream (or (incudine-output str) (midi-output-stream)))
+  (alexandria:if-let (stream (or (incudine-output str)))
 ;;    (break "write-event (midi-program-change): ~a" obj)
     (let* ((dat (midi-stream-tunedata str)))
       (destructuring-bind (offs num)
@@ -291,7 +288,7 @@
 #|
 
 (defun rts ()
-  (setf *rts-out* (new <incudine-stream>))
+(make-instance 'incudine-stream)  (setf *rts-out* (new <incudine-stream>))
   (incudine:rt-start))
 
 (defun output (msg &key at (to *out*) raw)

@@ -50,7 +50,10 @@
 ;;;  (cm)
   (cl-midictl:start-midi-engine)
   (sleep rt-wait)
-  (setf *rts-out* *midi-out1*)
+  (if *midi-out1*
+      (setf *rts-out* *midi-out1*)
+      (error "couldn't assign *rts-out* (increase rt-wait)"))
+  (incudine:rt-start)
   (setf *cm-rts-started* t)
   :cm-rts-started)
 
