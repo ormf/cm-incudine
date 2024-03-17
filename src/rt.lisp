@@ -45,6 +45,20 @@
     ((:sec) (* (incudine:now) incudine::*sample-duration*))
     ((:sample) (incudine:now))
     ((:ms) (* (incudine:now) incudine::*sample-duration* 1000))))
+(defmacro make-mt-stream (symbol-name midi-out-stream chan-tuning)
+  "Define, open and initialize a microtonal midistream. The name of
+the stream and an already initialized midi-port-stream has to be
+supplied and gets interned as a parameter."
+  `(progn
+     (defparameter ,symbol-name
+       (new incudine-stream
+         :name (string-trim '(#\*) (format nil "~a" ',symbol-name))
+         :output ,midi-out-stream))
+     (open-io (apply #'init-io ,symbol-name `(:channel-tuning ,,chan-tuning))
+              :output ,midi-out-stream)
+     (initialize-io ,symbol-name)
+     (values ',symbol-name)))
+
 
 (defun rts (&key (rt-wait 0))
   (declare (ignore rt-wait))

@@ -168,7 +168,7 @@ filtering."
       (declare (type (integer 0 127) ampl))
       (let ((time (+ (rts-now) (* *rt-scale* scoretime))))
         (let ((keyn (keynum keyn)))
-          (when (> keyn 0)
+          (unless (< keyn 0)
             (multiple-value-bind (keyn chan)
                 (incudine-ensure-microtuning (coerce keyn 'single-float)
                                              (midi-channel obj) str
