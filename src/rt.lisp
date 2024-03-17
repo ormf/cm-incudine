@@ -51,7 +51,7 @@
 ;;;  (cm)
   (let ((result (cl-midictl:start-midi-engine)))
     (setf *midi-in1* (first result))
-    (setf *midi-out1* (second result)))
+    (make-mt-stream *midi-out1* (second result) '(1 0)))
   (loop repeat 20 until *midi-out1* do
     (progn   (incudine.util:msg :warn "~a" *midi-out1*)
            (sleep 0.1)))

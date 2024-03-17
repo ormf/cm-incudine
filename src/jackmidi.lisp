@@ -167,16 +167,18 @@ filtering."
         (incudine-ensure-velocity (midi-keynum obj) (midi-amplitude obj))
       (declare (type (integer 0 127) ampl))
       (let ((time (+ (rts-now) (* *rt-scale* scoretime))))
-        (multiple-value-bind (keyn chan)
-            (incudine-ensure-microtuning (coerce keyn 'single-float)
-                                         (midi-channel obj) str
-                                         ;; pitch bend before the note
-                                         (- time 1e-5))
-          (declare (type (signed-byte 8) keyn chan))
-          (unless (< keyn 0)
-            (midi-note stream time keyn
-                       (float (midi-duration obj))
-                       ampl chan))))
+        (let ((keyn (keynum keyn)))
+          (when (> keyn 0)
+            (multiple-value-bind (keyn chan)
+                (incudine-ensure-microtuning (coerce keyn 'single-float)
+                                             (midi-channel obj) str
+                                             ;; pitch bend before the note
+                                             (- time 1e-5))
+              (declare (type (signed-byte 8) keyn chan))
+              (unless (< keyn 0)
+                (midi-note stream time keyn
+                           (float (midi-duration obj))
+                           ampl chan))))))
       (values))))
 
 (defmethod write-event ((obj midi) (str jackmidi:output-stream) scoretime)
@@ -252,6 +254,7 @@ filtering."
                                  (mm (make-channel-message opcode channel d1 d2))
                                  (ms (time->ms (now))))
                             (funcall hook mm ms))))))))
+    (declare (ignorable mask))
     (if responder
         (setf (gethash stream *stream-recv-responders*) responder)
         (error "~a: Couldn't add responder!" stream)))
