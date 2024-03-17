@@ -209,7 +209,22 @@
 (defmethod write-event
     ((obj midi-program-change) (str incudine-stream) scoretime)
   (alexandria:if-let (stream (or (incudine-output str)))
-;;    (break "write-event (midi-program-change): ~a" obj)
+    (let* ((dat (midi-stream-tunedata str)))
+      (destructuring-bind (offs num)
+          (cond
+            ((or (null dat) (eq (first dat) t))
+             (list (midi-event-channel obj) 1))
+            (t dat))
+        (dotimes (i num)
+          (at (+ (rts-now) scoretime)
+              (midi-out
+               stream
+               (logior (ash (midi-event-opcode obj) 4) (+ i offs))
+               (midi-event-data1 obj) (midi-event-data1 obj) 3)))))))
+
+(defmethod write-event
+    ((obj midi-program-change) (str #+portaudio pm:output-stream #-portaudio jackmidi:output-stream) scoretime)
+  (alexandria:if-let (stream (or (incudine-output str)))
     (let* ((dat (midi-stream-tunedata str)))
       (destructuring-bind (offs num)
           (cond
@@ -238,7 +253,6 @@
 
 (defmethod write-event
     ((obj midi-event) (stream #+portaudio pm:output-stream #-portaudio jackmidi:output-stream) scoretime)
-;;;  (break "write-event (midi-event): ~a" obj)
   (typecase obj
     (midi-channel-event
      (at (+ (rts-now) scoretime)

@@ -47,9 +47,15 @@
     ((:ms) (* (incudine:now) incudine::*sample-duration* 1000))))
 
 (defun rts (&key (rt-wait 0))
+  (declare (ignore rt-wait))
 ;;;  (cm)
-  (cl-midictl:start-midi-engine)
-  (sleep rt-wait)
+  (let ((result (cl-midictl:start-midi-engine)))
+    (setf *midi-in1* (first result))
+    (setf *midi-out1* (second result)))
+  (loop repeat 20 until *midi-out1* do
+    (progn   (incudine.util:msg :warn "~a" *midi-out1*)
+           (sleep 0.1)))
+;;;  (incudine.util:msg :warn "~a" *midi-out1*)
   (if *midi-out1*
       (setf *rts-out* *midi-out1*)
       (error "couldn't assign *rts-out* (increase rt-wait)"))
