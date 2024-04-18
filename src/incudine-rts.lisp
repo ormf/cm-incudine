@@ -564,8 +564,13 @@
 ))
 |#
 
-(export '(rts *rts-out* incudine-stream
-          samps->time time->samps secs->samps samps->secs at amp->velo
+(defun ensure-jackmidi (stream)
+  (if(typep stream 'incudine-stream)
+     (incudine-output stream)
+     stream))
 
+(export '(rts *rts-out* incudine-stream incudine-output incudine-input
+          samps->time time->samps secs->samps samps->secs at amp->velo
+          ensure-jackmidi
           write-event)
         :cm)

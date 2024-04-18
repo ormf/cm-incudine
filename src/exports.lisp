@@ -12,4 +12,9 @@
    status->channel
    make-mm-mask
    set-receiver!
-   ))
+   incudine-stream
+   incudine-output
+   write-event
+   rts-hush
+   ensure-jackmidi)
+ :cm)

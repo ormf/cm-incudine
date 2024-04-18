@@ -26,14 +26,19 @@
 (defparameter *incudine-default-mask* 0)
 (defparameter *rtsdebug* nil)
 
-(defun rts-hush ()
+(defun incudine-rts-hush ()
   (incudine:flush-pending)
   (dotimes (chan 16) (cm::sprout
                       (cm::new cm::midi-control-change :time 0
                         :controller 123 :value 127 :channel chan)))
-  (scratch::node-free-unprotected)
-;;;   (scratch::node-free-all)
+;;;  (incudine::node-free-unprotected)
+  (scratch::node-free-all)
   )
+
+(setf (fdefinition 'rts-hush) #'incudine-rts-hush)
+
+(defun set-standard-hush ()
+  (setf (fdefinition 'rts-hush) #'incudine-rts-hush))
 
 (progn
 (defclass incudine-stream (rt-stream midi-stream-mixin)
@@ -210,7 +215,3 @@
   (at (+ (rts-now) scoretime) obj)
   (values))
 
-(export '(incudine-stream
-          write-event
-          rts-hush)
-        :cm)

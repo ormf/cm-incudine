@@ -152,3 +152,19 @@ supplied and gets interned as a parameter."
               ((1) (error "enqueue: no room in scheduler for ~S." object))
               ((2) (error "enqueue: RTS not running."))))
     (values)))
+
+(in-package :cl-midictl)
+
+(defmethod initialize-instance :after ((instance midi-controller) &rest args)
+  (declare (ignorable args))
+  (with-slots (id midi-input midi-output) instance
+;;    (format t "~&midictl-id: ~a ~%" id)
+    (if (gethash id *midi-controllers*)
+        (warn "id already used: ~a" id)
+        (progn
+          (format t "adding controller ~S~%" id)
+          (unless midi-input (error "no midi-input specified for ~a" instance))
+          (unless midi-output (error "no midi-output specified for ~a" instance))
+          (setf midi-output (cm:ensure-jackmidi midi-output))
+          (push instance (gethash midi-input *midi-controllers*))
+          (setf (gethash id *midi-controllers*) instance)))))
