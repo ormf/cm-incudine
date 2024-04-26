@@ -74,7 +74,7 @@ supplied and gets interned as a parameter."
       (setf *rts-out* *midi-out1*)
       (error "couldn't assign *rts-out* (increase rt-wait)"))
   (incudine:rt-start)
-  (incudine:setup-io)
+;;;  (incudine:setup-io)
   (setf *cm-rts-started* t)
   :cm-rts-started)
 
