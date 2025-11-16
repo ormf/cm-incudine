@@ -1,3 +1,9 @@
+* This Repository is deprecated!
+
+  The cm-incudine repository has been completely integrated into
+  [[https://codeberg.org/ormf/clamps/][Clamps]] and is developed there. The archive here is only kept for
+  historical reasons.
+
 * cm-incudine
 ** Overview
    /cm-incudine/ extends common music 2 (the common lisp port of
